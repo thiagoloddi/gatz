@@ -1,10 +1,15 @@
 # gatz
 
-## Install and run
+## Install and build
 
 ```bash
 git clone https://github.com/thiagoloddi/gatz.git
 npm install
+npm run build
+```
+
+## Run
+```bash
 npm run dev
 ```
 
