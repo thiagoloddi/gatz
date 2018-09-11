@@ -1,0 +1,35 @@
+.row
+	&:after
+	&:before
+		content ""
+		display table
+		clear both
+
+.col
+	min-height 1px
+	display block
+	float left
+
+	for column in (1..$columns)
+		&.-xs{column}
+			width ((column / $columns) * 100)%
+
+	for column in (1..$columns)
+		@media (min-width $screen-device-small)
+			&.-sm{column}
+				width ((column / $columns) * 100)%
+
+	for column in (1..$columns)
+		@media (min-width $screen-device-medium)
+			&.-md{column}
+				width ((column / $columns) * 100)%
+
+	for column in (1..$columns)
+		@media (min-width $screen-device-large)
+			&.-lg{column}
+					width ((column / $columns) * 100)%
+
+	for column in (1..$columns)
+		@media (min-width $screen-device-xlarge)
+			&.-xlg{column}
+					width ((column / $columns) * 100)%

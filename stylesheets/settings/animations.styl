@@ -1,0 +1,29 @@
+@keyframes fade-in {
+    from { opacity: 0 }
+    to { opacity: 1 }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+        visibility: visible;
+        
+    }
+    to { opacity: 0 }
+}
+
+@keyframes expand {
+    from { transform: scale(0, 0) }
+    to { transform: scale(1, 1) }
+}
+
+@keyframes shrink {
+    from { transform: scale(1, 1) }
+    to { transform: scale(0, 0) }
+}
+
+@keyframes paused-spin {
+    0% {}
+    40% { transform: rotateZ(0deg)}
+    100% { transform: rotateZ(360deg)}
+}
