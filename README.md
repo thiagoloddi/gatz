@@ -3,7 +3,7 @@
 ## Install and run
 
 ```bash
-git clone <this_repo>
+git clone https://github.com/thiagoloddi/gatz.git
 npm install
 npm run dev
 ```
