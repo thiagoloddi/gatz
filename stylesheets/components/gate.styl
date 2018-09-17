@@ -1,0 +1,26 @@
+.gate
+  position relative
+  height 40px
+  width 60px
+
+  .coords
+    color black
+
+  .terminal
+    visibility hidden
+    position absolute
+    border 3px solid black
+    border-radius 50%
+    width 0
+    height 0
+
+  img 
+    height 100%
+    width 100%
+
+  &.-canvas:hover
+    .terminal
+      visibility visible
+
+      &:hover
+        border-color green

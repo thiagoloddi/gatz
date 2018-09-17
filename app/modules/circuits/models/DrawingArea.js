@@ -16,18 +16,20 @@ export default class DrawingArea {
     this.canvas = canvas;
   }
 
-  addScrollListener() {
-    const { canvas } = this;
+  setCanvasContainer(container) {
+    this.container = container;
+  }
 
-    if (canvas.addEventListener) {
-      // IE9, Chrome, Safari, Opera
-      canvas.addEventListener("mousewheel", this.onScroll, false);
-      // Firefox
-      canvas.addEventListener("DOMMouseScroll", this.onScroll, false);
-    }
-    // IE 6/7/8
-    else canvas.attachEvent("onmousewheel", this.onScroll);
-
+  setSize(padding) {
+    this.canvasHeight = this.container.clientHeight - 2 * padding;
+    this.canvasWidth = this.container.clientWidth - 2 * padding;
+  }
+  
+  updateSize(zoom = 1) {
+    this.canvas.height = this.canvasHeight * zoom;
+    this.canvas.width = this.canvasWidth * zoom;
+    this.container.style.width = this.canvasWidth * zoom + "px";
+    this.container.style.height = this.canvasHeight * zoom + "px";
   }
   
   onScroll({ deltaY }) {
@@ -55,12 +57,12 @@ export default class DrawingArea {
     this.clear();
   }
 
-  clear() {
+  clear(zoom = 1) {
     const { canvas, scale, viewport } = this;
     const c = canvas.getContext('2d'); 
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = '#f1f1f1';
     c.fillRect(0, 0, canvas.width, canvas.height);
-    draws.grid(canvas, scale, viewport);
+    draws.grid(canvas, zoom, viewport);
   }
 }

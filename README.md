@@ -13,6 +13,20 @@ npm run build
 npm run dev
 ```
 
-## Known issues
-- Side toolbox is dragged with the canvas:
-![alt text](public/images/bug.png)
+## Roadmap
+- Power Sources
+- Delete Elements
+- Add All Logic Gates
+- Add Logic
+- Display Bits On Gates
+- Drag Segments
+- Add Line From Line
+- Ctrl Selection
+- Create Component
+- Export Truth Table
+- Area Selection
+- Undo/Redo
+- Snap
+- More Complex Lines
+- Resize Elements
+- Rotate Elements

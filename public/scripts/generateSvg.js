@@ -1,8 +1,10 @@
+const C2S = require('canvas2svg');
 
-export default (canvas, x = 0, y = 0) => {
-  const ctx = canvas.getContext('2d');
-  const GATE_HEIGHT = canvas.height;
-  const GATE_WIDTH = canvas.width;
+const run = (canvas, x = 0, y = 0) => {
+  console.log('run script');
+  const ctx = new C2S(60, 40);
+  const GATE_HEIGHT = 40;
+  const GATE_WIDTH = 60;
 
   const INPUT_LENGTH = 0.15 * GATE_WIDTH;
   const INPUT_OFFSET = 0.3 * GATE_HEIGHT;
@@ -42,9 +44,9 @@ export default (canvas, x = 0, y = 0) => {
   ctx.lineTo(right + INPUT_LENGTH, middle);
   ctx.stroke();
 
-  return { terminals: { 
-    A: { x: 0, y: INPUT_OFFSET },
-    B: { x: 0, y: GATE_HEIGHT - INPUT_OFFSET },
-    OUT: { x: GATE_WIDTH, y: RADIUS }
-  }};
+  const svg = ctx.getSvg();
+
+  console.log(ctx.getSerializedSvg())
+  console.log(svg);
 }
+run();
