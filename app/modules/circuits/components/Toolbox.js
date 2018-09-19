@@ -1,14 +1,16 @@
 import React, { Component } from 'react'
-import Gate from './Gate';
-import Element from './Element';
 import ToolboxItem from './ToolboxItem';
+import { AND, SWITCH } from '../constants/gates';
 export default class Toolbox extends Component {
 
   render() {
     return (
       <div ref="toolbox" className="tool-box">
-        <ToolboxItem elType="and" onGateClick={this.props.onGateClick} selected={this.props.selected} />
-        <ToolboxItem elType="switch" onGateClick={this.props.onGateClick} selected={this.props.selected} />
+      
+        <ToolboxItem gateType={AND} onGateClick={this.props.onGateClick} selected={this.props.selected}>
+          <Element gateType={AND} />
+        </ToolboxItem>
+        <ToolboxItem gateType={SWITCH} onGateClick={this.props.onGateClick} selected={this.props.selected} />
       </div>
     )
   }

@@ -1,25 +1,28 @@
 import uuidv4 from 'uuid/v4';
 import _ from "lodash";
-
-import { TERMINALS } from '../constants/gates/and.constants';
+import c from '../constants/gates';
  
 export default class GateModel {
-  constructor(coords, dimen, id) {
+  constructor(coords, type, id) {
     this.id = id || uuidv4();
-    this.dimen = dimen;
-    this.x = coords.x - dimen.width / 2;
-    this.y = coords.y - dimen.height / 2;
+    this.constants = c[type];
+    this.x = coords.x - this.constants.WIDTH / 2;
+    this.y = coords.y - this.constants.HEIGHT / 2;
     this.clickOffset = { x: 0, y: 0 };
     this.lines = {
       A: null,
       B: null,
       OUT: null
     };
+    this.state = {
+      A: false, B: false, OUT: false
+    }
+    this.type = type;
   }
 
   getTerminalCoords(terminal) {
     const { x,  y } = this;
-    const { X, Y } = _.find(TERMINALS, { NAME: terminal });
+    const { X, Y } = _.find(this.constants.TERMINALS, { NAME: terminal });
     return { x: x + X, y: y + Y };
   }
 
@@ -40,18 +43,38 @@ export default class GateModel {
     this.lines[terminalId] = line;
   }
 
-  toStateObject(zoom = 1) {
-    const { x, y, id, dimen: { width, height }} = this;
+  toStateObject(zoom, extra) {
+    if(!zoom) throw `Zoom is required in toStateObject ${this.type} ${this.id}`;
+    const { x, y, id, constants: { WIDTH, HEIGHT }, type } = this;
     return {
+      gateType: type,
       elType: 'GATE',
       id,
       style: {
         position: 'absolute',
-        height: height * zoom,
-        width: width * zoom,
+        height: HEIGHT * zoom,
+        width: WIDTH * zoom,
         left: x * zoom,
         top: y * zoom
-      }
+      },
+      lines: _.mapValues(this.lines, l => !!l),
+      state: { ...this.state },
+      ...extra
     }
   }
+
+  updatePower() {
+    const { lines, state } = this;
+    state.A = lines.A && lines.A.hasPower;
+    state.B = lines.B && lines.B.hasPower;
+    state.OUT = state.A && state.B;
+    if(lines.OUT) {
+      lines.OUT.hasPower = state.OUT;
+
+      if(lines.OUT.endGate) lines.OUT.endGate.updatePower();
+    }
+    
+  }
+
+  onGateClick() {}
 }

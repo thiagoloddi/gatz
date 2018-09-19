@@ -1,7 +1,5 @@
 .gate
   position relative
-  height 40px
-  width 60px
 
   .coords
     color black
@@ -9,10 +7,16 @@
   .terminal
     visibility hidden
     position absolute
-    border 3px solid black
+    border 3px solid #3f3f3f
     border-radius 50%
     width 0
     height 0
+
+    &.-connected
+      visibility visible
+
+    &.-power
+      border-color green
 
   img 
     height 100%
@@ -23,4 +27,6 @@
       visibility visible
 
       &:hover
-        border-color green
+        border-color #3f3f3f
+        &.-power
+          border-color green

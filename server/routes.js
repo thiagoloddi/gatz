@@ -1,8 +1,3 @@
-// import request from "./request";
-
-// import Home from "../app/modules/home";
-// import Profile from "../app/modules/profile";
-
 import dimen from '../draws/dimensions';
 
 const routes = app => {

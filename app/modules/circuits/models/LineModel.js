@@ -1,7 +1,5 @@
 import uuid from 'uuid/v4';
-import constants from '../utils/constants';
-
-const { LINE_WIDTH, LINE_MINIMUM_LENGTH } = constants;
+import { LINE_WIDTH } from '../constants/globals.constants';
 
 export default class LineModel {
   constructor(gate, terminal, id) {
@@ -15,6 +13,7 @@ export default class LineModel {
     this.startTerminal = terminal;
     this.endGate = null;
     this.endTerminal = null;
+    this.hasPower = false;
   }
 
   setEndPosition(endPosition) {
@@ -35,7 +34,7 @@ export default class LineModel {
   }
 
   getSegments() {
-    const { start, end, startGate, endGate } = this;
+    const { start, end } = this;
     let dx = end.x - start.x;
     let dy = end.y - start.y;
     let segments = [];
@@ -50,6 +49,9 @@ export default class LineModel {
           p2 = { x: dx / 2, y: 0 };
           p3 = { x: dx / 2, y: dy };
           p4 = { x: dx, y: dy };
+          segments.push({ s: p1, e: p2 });
+          segments.push({ s: p3, e: p2 });
+          segments.push({ s: p3, e: p4 });
         } 
         // top
         else {
@@ -57,11 +59,11 @@ export default class LineModel {
           p2 = { x: dx / 2, y: Math.abs(dy) };
           p3 = { x: dx / 2, y: 0 };
           p4 = { x: dx, y: 0 };
+          segments.push({ s: p1, e: p2 });
+          segments.push({ s: p2, e: p3 });
+          segments.push({ s: p3, e: p4 });
         }
 
-        segments.push({ s: p1, e: p2 });
-        segments.push({ s: p2, e: p3 });
-        segments.push({ s: p3, e: p4 });
       }
       // left 
       else {
@@ -73,6 +75,9 @@ export default class LineModel {
           p2 = { x: dx, y: dy / 2 };
           p3 = { x: 0, y: dy / 2 };
           p4 = { x: 0, y: dy };
+          segments.push({ s: p2, e: p1 });
+          segments.push({ s: p3, e: p2 });
+          segments.push({ s: p4, e: p3 });
         }
         // top
         else {
@@ -81,11 +86,10 @@ export default class LineModel {
           p2 = { x: dx, y: dy / 2 };
           p3 = { x: 0, y: dy / 2 };
           p4 = { x: 0, y: 0 };
+          segments.push({ s: p1, e: p2 });
+          segments.push({ s: p3, e: p2 });
+          segments.push({ s: p3, e: p4 });
         }
-
-        segments.push({ s: p1, e: p2 });
-        segments.push({ s: p3, e: p2 });
-        segments.push({ s: p3, e: p4 });
         
       }
     }
@@ -99,12 +103,13 @@ export default class LineModel {
       elType: 'LINE',
       id: this.id,
       segments: segments.map(seg => {return ({
-        height: Math.max(LINE_WIDTH, Math.abs(seg.s.y - seg.e.y) * zoom) + 'px',
-        width: Math.max(LINE_WIDTH, Math.abs(seg.s.x - seg.e.x) * zoom) + 'px',
-        top: (seg.e.y > seg.s.y ? seg.s.y : seg.e.y) * zoom + 'px',
-        left: seg.s.x * zoom + 'px',
+        height: Math.floor(Math.max(LINE_WIDTH, Math.max(LINE_WIDTH, Math.abs(seg.s.y - seg.e.y)) * zoom)) + 'px',
+        width: Math.floor(Math.max(LINE_WIDTH, Math.max(LINE_WIDTH, Math.abs(seg.s.x - seg.e.x)) * zoom)) + (seg.s.y == seg.e.y ? Math.floor(zoom) : 0) + 'px',
+        top: Math.floor(seg.e.y * zoom) + 'px',
+        left: Math.floor(seg.s.x * zoom) + 'px',
       })}),
-      lines: this.getLinesStyle(zoom)
+      lines: this.getLinesStyle(zoom),
+      hasPower: this.hasPower
     }
   }
 

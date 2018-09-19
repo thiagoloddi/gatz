@@ -1,70 +1,66 @@
 import React, { PureComponent } from 'react'
-import draws from '../draws';
-import constants from '../utils/constants';
-const { TERMINAL_RADIUS } = constants;
+import c, { SWITCH } from '../constants/gates';
+import { TERMINAL_RADIUS } from '../constants/globals.constants';
 
-export default class Element extends PureComponent {
+class Element extends PureComponent {
 
   constructor(props) {
     super(props);
 
     this.onDragStart = this.onDragStart.bind(this);
+    this.constants = c[props.gateType];
   }
 
   componentDidMount() {
-    this.updateCanvas();
+    const { HEIGHT, WIDTH } = this.constants;
+    this.refs.container.style.width = WIDTH + 'px';
+    this.refs.container.style.height = HEIGHT + 'px';
   }
-
-  componentDidUpdate(prevProps) {
-    if(this.props.zoom != prevProps.zoom)
-      this.updateCanvas();
-  }
-
-  updateCanvas() {
-    const { refs: { canvas }, props: { elementType }} = this;
-
-    canvas.height = this.refs.container.clientHeight;
-    canvas.width = this.refs.container.clientWidth;
-
-    this.gate = draws[elementType](canvas);
-    this.forceUpdate();
-
-  }
-
+  
   onDragStart(e) {
     e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
     if(this.props.onDragStart) this.props.onDragStart(e);
   }
 
   renderTerminals() {
-    if(this.gate) {
-      const { terminals } = this.gate;
-      const { zoom, id, onTerminalClick = () => {} } = this.props;
+    if(this.props.isCanvas) {
+      const { zoom, id, onTerminalClick = () => {}, lines, state } = this.props;
       const r = TERMINAL_RADIUS * zoom;
-      return [
-        <div key={0} onClick={onTerminalClick.bind(null, { terminal: 'A', gateId: id })} style={{ borderWidth: r + 'px', left: terminals.A.x - r + "px", top: terminals.A.y - r + "px" }} className="terminal"></div>,
-        <div key={1} onClick={onTerminalClick.bind(null, { terminal: 'B', gateId: id })} style={{ borderWidth: r + 'px', left: terminals.B.x - r + "px", top: terminals.B.y - r + "px" }} className="terminal"></div>,
-        <div key={2} onClick={onTerminalClick.bind(null, { terminal: 'OUT', gateId: id })} style={{ borderWidth: r + 'px', left: terminals.OUT.x - r + "px", top: terminals.OUT.y - r + "px" }} className="terminal"></div>
-      ];
+      return this.constants.TERMINALS.map(({ NAME, X, Y }, i) => 
+        <div className={`terminal ${lines[NAME] ? '-connected' : ''} ${state[NAME] ? '-power' : ''}`} key={i} onClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })} style={{ borderWidth: r + 'px', left: X * zoom - r + "px", top: Y * zoom - r + "px" }}></div>
+      );
+    }
+  }
+
+  getIconName() {
+    const { gateType, state: { OUT } } = this.props;
+    switch(gateType) {
+      case 'switch': return gateType + (OUT ? '-on' : '-off');
+      default: return gateType;
     }
   }
 
   render() {
-    const { style, id, onClick, onDrag, isCanvas, coords } = this.props;
-
+    const { style, id, onClick, onDrag, isCanvas } = this.props;
     return (
         <div 
           className={`gate ${isCanvas ? '-canvas' : ''}`} 
-          draggable={id !== undefined} 
-          onDrag={onDrag} 
-          onDragStart={this.onDragStart} 
-          onClick={onClick} id={id} 
+          draggable={id !== undefined}
+          onDrag={onDrag}
+          onDragStart={this.onDragStart}
+          onClick={onClick} 
+          id={id} 
           style={style}
           ref="container">
-          <canvas ref="canvas"></canvas>
-          { !coords || <div className="coords">{`${coords.x}, ${coords.y}`}</div>}
+          <img draggable={false} src={`icons/${this.getIconName()}.svg`} />
           {this.renderTerminals()}
         </div>
     );
   }
 }
+
+Element.defaultProps = {
+  state: {}
+}
+
+export default Element;

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Canvas from './components/Canvas';
-import Gate from './components/Gate';
 import Toolbox from './components/Toolbox';
 
 export default class Circuits extends Component {
@@ -17,8 +16,8 @@ export default class Circuits extends Component {
     this.onZoom = this.onZoom.bind(this);
   }
 
-  onGateClick(elType) {
-    this.setState({ selected: elType });
+  onGateClick(gateType) {
+    this.setState({ selected: gateType });
   }
 
   onZoom(type) {

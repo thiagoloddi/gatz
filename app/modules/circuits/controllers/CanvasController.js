@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import GateModel from "../models/GateModel";
+import Switch from "../models/gates/Switch";
 import constants from '../utils/constants';
 import LineModel from "../models/LineModel";
 
@@ -10,15 +11,19 @@ const {
 } = constants;
 
 export default class CanvasController {
-  static createGate(e, callback) {    
-    const { state, gates, coords, props: { zoom } } = this;
+  static createGate(e, selected, callback) {    
+    const { gates, coords, props: { zoom } } = this;
     const { pageX, pageY } = e;
-    const elements = [ ...state.elements ];
-    const gate = new GateModel(coords.windowToCanvas(pageX, pageY, zoom), { height: AND_GATE_HEIGHT, width: AND_GATE_WIDTH });
+    const xy = coords.windowToCanvas(pageX, pageY, zoom);
+    let gate;
+    
+    switch(selected) {
+      case 'switch': gate = new Switch(xy); break;
+      default: gate = new GateModel(xy, selected); break;
+    }
     
     gates.push(gate);
-    elements.push(gate.toStateObject(zoom));
-    callback({ elements });
+    this.updateElements(zoom, [gate.id]);
   }
 
   static dragGateStart(e) {
@@ -51,29 +56,34 @@ export default class CanvasController {
     callback({ elements });
   }
 
-  static createLine({ terminal, gateId }, callback) {
-      console.log('createLine');
+  static createLine({ terminal, gateId }) {
       const { zoom } = this.props;
       const gate = _.find(this.gates, { id: gateId });
       const line = new LineModel(gate, terminal);
   
       this.lines.push(line);
       gate.setTerminalLine(terminal, line);
+      this.setState({ drawingLine: line });
+      this.updateElements(zoom, [line.id, gate.id]);
   
-      const elements = [ ...this.state.elements ];
-      elements.push(line.toStateObject(zoom));
+      // const elements = [ ...this.state.elements ];
+      // elements.push(line.toStateObject(zoom));
   
-      callback({ drawingLine: line, elements });
+      // console.log("createLine", elements);
+      // callback({ drawingLine: line, elements });
   }
 
-  static finishLine({ terminal, gateId }, callback) {
+  static finishLine({ terminal, gateId }) {
     const { zoom } = this.props;
     const gate = _.find(this.gates, { id: gateId });
-    gate.setTerminalLine(terminal, this.state.drawingLine);
-    this.state.drawingLine.setEndGate(gate, terminal);
-
-    callback({ drawingLine: null, elements: this.state.elements.map(el => 
-      el.id == this.state.drawingLine.id ? this.state.drawingLine.toStateObject(zoom) : el
-    )});
+    const line = _.find(this.lines, { id: this.state.drawingLine.id });
+    line.setEndGate(gate, terminal);
+    gate.setTerminalLine(terminal, line);
+    
+    this.setState({ drawingLine: null });
+    this.updateElements(zoom, [gate.id, line.id ]);
+    // callback({ drawingLine: null, elements: this.state.elements.map(el => 
+    //   el.id == this.state.drawingLine.id ? this.state.drawingLine.toStateObject(zoom) : el
+    // )});
   }
 }

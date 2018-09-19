@@ -1,16 +1,14 @@
 import React, { Component } from 'react'
 import DrawingArea from '../models/DrawingArea';
-import _ from 'lodash';
 
-import * as xy from '../utils/coords';
-import Gate from './Gate';
+import Element from './Element';
 import constants from '../utils/constants';
 import BottomControl from './BottomControl';
-import GateModel from '../models/GateModel';
 import Coordinates from '../models/Coordinates';
 import CanvasController from '../controllers/CanvasController';
-import LineModel from '../models/LineModel';
 import Line from './Line';
+import { SWITCH } from '../constants/gates';
+import PowerSource from './PowerSource';
 const {
   MENU_WIDTH,
   PADDING
@@ -38,6 +36,7 @@ export default class Canvas extends Component {
     this.onGateDragStart = this.onGateDragStart.bind(this);
     this.onHover = this.onHover.bind(this);
     this.onTerminalClick = this.onTerminalClick.bind(this);
+    this.onCanvasGateClick = this.onCanvasGateClick.bind(this)
   }
 
   componentDidMount() {
@@ -60,16 +59,36 @@ export default class Canvas extends Component {
   updateZoom(zoom) {
     this.drawingArea.updateSize(zoom);
     this.drawingArea.clear(zoom);
-
-    const gates = this.gates.map(gate =>  gate.toStateObject(zoom));
-    const lines = this.lines.map(line => line.toStateObject(zoom));
-    
-    this.setState({ elements: gates.concat(lines) });
+    this.updateElements(zoom);
 
   }
 
   onCanvasGateClick(e) {
-    // 
+    const { id } = e.currentTarget;
+    const gate = _.find(this.gates, { id });
+    const shouldUpdate = gate.onGateClick();
+    if(shouldUpdate)
+      this.updateElements(this.props.zoom);
+  }
+
+  updateElements(zoom, ids) {
+    const elements = this.gates.concat(this.lines).map(m =>
+      !ids || ids.includes(m.id) ? m.toStateObject(zoom) : _.find(this.state.elements, { id: m.id }) || m.toStateObject(zoom) 
+    );
+    this.setState({ elements });
+  }
+
+  onHover(e) {
+    const { pageX, pageY } = e;
+    const c = this.coords.windowToCanvas(pageX, pageY, this.props.zoom);
+    this.setState({ c });
+
+    const { drawingLine } = this.state;
+    if(drawingLine) {
+      const { zoom } = this.props;
+      drawingLine.setEndPosition(c);
+      this.updateElements(zoom, [drawingLine.id]);
+    }
   }
 
   onGateDragStart(e) {
@@ -81,9 +100,8 @@ export default class Canvas extends Component {
   }
 
   onCanvasClick(e) {
-    console.log('onCanvasClick');
     if(this.props.selected) {
-      CanvasController.createGate.apply(this, [e, this.callback]);
+      CanvasController.createGate.apply(this, [e, this.props.selected, this.callback]);
       this.props.onGateClick();
     }
 
@@ -92,11 +110,12 @@ export default class Canvas extends Component {
     }
   }
 
-  async onTerminalClick({ terminal, gateId }) {
+  onTerminalClick({ terminal, gateId }, e) {
+    e.stopPropagation();
     if(!this.state.drawingLine) {
-      CanvasController.createLine.apply(this, [{ terminal, gateId }, this.callback]);
+      CanvasController.createLine.apply(this, [{ terminal, gateId }]);
     } else {
-      CanvasController.finishLine.apply(this, [{ terminal, gateId }, this.callback]);
+      CanvasController.finishLine.apply(this, [{ terminal, gateId }]);
     }
   }
 
@@ -109,9 +128,9 @@ export default class Canvas extends Component {
     });
   }
 
-  renderLine({ id, segments, lines }) {
+  renderLine({ id, segments, lines, hasPower }) {
     return (
-      <Line key={id} id={id} segments={segments} lines={lines} />
+      <Line key={id} id={id} segments={segments} lines={lines} hasPower={hasPower}/>
     );
   }
 
@@ -119,41 +138,33 @@ export default class Canvas extends Component {
     this.setState(state);
   }
 
-  onHover(e) {
-    const { pageX, pageY } = e;
-    const c = this.coords.windowToCanvas(pageX, pageY, this.props.zoom);
-    this.setState({ c });
-
-    const { drawingLine, elements } = this.state;
-    if(drawingLine) {
-      const { zoom } = this.props;
-      drawingLine.setEndPosition(c);
-      this.setState({ 
-        elements: elements.map(el => el.id == drawingLine.id ? drawingLine.toStateObject(zoom) : el)
-      });
-    }
-  }
-
-  renderGate({ id, style, coords }) {
+  renderGate({ id, style, coords, gateType, lines, state }) {
     const { zoom } = this.props;
-    return (
-      <Gate 
-        isCanvas
-        id={id}
-        key={id}
-        style={style}
-        coords={coords}
-        zoom={zoom}
-        onClick={this.onCanvasGateClick}
-        onDragStart={this.onGateDragStart}
-        onDrag={this.onGateDrag}
-        onTerminalClick={this.onTerminalClick}
-      />
-    );
+    const props =  {
+      id,
+      style,
+      coords,
+      zoom,
+      gateType,
+      lines,
+      state,
+      key: id,
+      isCanvas: true,
+      onClick: this.onCanvasGateClick,
+      onDragStart: this.onGateDragStart,
+      onDrag: this.onGateDrag,
+      onTerminalClick: this.onTerminalClick,
+    };
+
+    switch(gateType) {
+      // case SWITCH: return <PowerSource {...props} on={on}/>;
+      default: return <Element {...props} />;
+    }
   }
 
   render() {
     const { c } = this.state;
+    
     return (
       <div className="canvas-viewport" ref="viewport">
         <div ref="canvasContainer" className="canvas-container" onMouseMove={this.onHover}>
