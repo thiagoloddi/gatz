@@ -2,7 +2,7 @@ import uuidv4 from 'uuid/v4';
 import _ from "lodash";
 import c from '../constants/gates';
  
-export default class GateModel {
+export default class Element {
   constructor(coords, type, id) {
     this.id = id || uuidv4();
     this.constants = c[type];
@@ -44,7 +44,7 @@ export default class GateModel {
   }
 
   toStateObject(zoom, extra) {
-    if(!zoom) throw `Zoom is required in toStateObject ${this.type} ${this.id}`;
+    if(!zoom) throw new Error(`Zoom is required in toStateObject ${this.type} ${this.id}`);
     const { x, y, id, constants: { WIDTH, HEIGHT }, type } = this;
     return {
       gateType: type,
@@ -52,10 +52,10 @@ export default class GateModel {
       id,
       style: {
         position: 'absolute',
-        height: HEIGHT * zoom,
-        width: WIDTH * zoom,
-        left: x * zoom,
-        top: y * zoom
+        height: HEIGHT * zoom + 'px',
+        width: WIDTH * zoom + 'px',
+        left: x * zoom + 'px',
+        top: y * zoom + 'px'
       },
       lines: _.mapValues(this.lines, l => !!l),
       state: { ...this.state },

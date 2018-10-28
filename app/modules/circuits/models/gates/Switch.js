@@ -1,12 +1,11 @@
-import GateModel from "../GateModel";
+import Element from "../Element";
 import { SWITCH } from "../../constants/gates";
 
 
-export default class Switch extends GateModel {
+export default class Switch extends Element {
   constructor(xy) {
     super(xy, SWITCH);
   }
-    
   
   toStateObject(zoom) {
     return super.toStateObject(zoom, { hasPower: this.hasPower });

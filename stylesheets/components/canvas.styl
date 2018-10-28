@@ -1,17 +1,16 @@
 .canvas-viewport
     position relative
     display inline-block
-    width calc(100% - 100px)
-    height 100%
-    overflow auto
-    .canvas-container
-        padding 20px
-        box-sizing content-box
+    width calc(100% - 180px)
+    height calc(100% - 60px)
+    background-color #f6f6f6
+    
+    .drawing-area
+        position absolute
+        left 20px
+        top 20px
         width 1000px
         height 1000px
-        .drawing-area
-            position relative
-            width 100%
-            height 100%
-            border 1px solid #d6d6d6
-            box-sizing content-box
+        border 1px solid #d6d6d6
+        background-color white
+        box-sizing content-box

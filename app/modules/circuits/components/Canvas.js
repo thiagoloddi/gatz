@@ -1,32 +1,28 @@
 import React, { Component } from 'react'
-import DrawingArea from '../models/DrawingArea';
 
 import Element from './Element';
-import constants from '../utils/constants';
-import BottomControl from './BottomControl';
 import Coordinates from '../models/Coordinates';
 import CanvasController from '../controllers/CanvasController';
 import Line from './Line';
-import { SWITCH } from '../constants/gates';
-import PowerSource from './PowerSource';
-const {
-  MENU_WIDTH,
-  PADDING
-} = constants;
+import { PADDING, CANVAS_DIMEN } from '../constants/globals.constants';
 
-export default class Canvas extends Component {
+import { connect } from 'react-redux';
+import { selectItemAction } from '../../../actions/toolbox.actions';
+import { setCanvasPosition, updateZoomAction, selectElementAction, clearSelectionAction } from '../../../actions/window.actions';
+
+class Canvas extends Component {
 
   constructor(props) {
     super(props);
 
-    this.drawingArea = new DrawingArea();
-    this.coords = new Coordinates(MENU_WIDTH, PADDING);
+    this.coords = new Coordinates();
     this.gates = [];
     this.lines = [];
 
+    this.elements = [];
+
     this.state = {
       elements: [],
-      c: { x: 0, y: 0 },
       drawingLine: false
     };
 
@@ -36,18 +32,65 @@ export default class Canvas extends Component {
     this.onGateDragStart = this.onGateDragStart.bind(this);
     this.onHover = this.onHover.bind(this);
     this.onTerminalClick = this.onTerminalClick.bind(this);
-    this.onCanvasGateClick = this.onCanvasGateClick.bind(this)
+    this.onCanvasGateClick = this.onCanvasGateClick.bind(this);
+
+
+    this.onCanvasDragStart = this.onCanvasDragStart.bind(this);
+    this.onCanvasDrag = this.onCanvasDrag.bind(this);
   }
 
-  componentDidMount() {
-    const { canvasContainer, canvas, viewport } = this.refs;
-    this.coords.setViewport(viewport);
+  onCanvasDragStart(e) {
+    const { pageX, pageY } = e;
+    const { x, y } = this.props.position;
+    this.coords.setDragStart(pageX, pageY);
+    this.coords.setInitialPosition(x, y);
+    e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
+  }
+  
+  onCanvasDrag(e) {
+    const { pageX, pageY } = e;
+    const { dragStart, initialPosition } = this.coords;
+    if(pageX && pageY) {
+      const x = dragStart.x - pageX + initialPosition.x;
+      const y = dragStart.y - pageY + initialPosition.y;
+
+      this.props.setCanvasPosition(x, y);
+      this.coords.setCanvasPosition(x, y);
+    }
+  }
+
+  onCanvasClick(e) {
     
-    this.drawingArea.setCanvas(canvas);
-    this.drawingArea.setCanvasContainer(canvasContainer);
-    this.drawingArea.setSize(PADDING);
-    this.drawingArea.updateSize();
-    this.drawingArea.clear();
+    if(this.props.newElement) {
+      
+      CanvasController.createGate.apply(this, [e, this.props.newElement]);
+      this.props.selectItemAction(null);
+    }
+
+    if(this.state.drawingLine) {
+      this.setState({ drawingLine: null });
+    }
+
+    if(this.props.selected.length) {
+      this.props.clearSelectionAction();
+    }
+
+  }
+
+  onCanvasGateClick(e) {
+    console.log('on canvas click');
+    const { id } = e.currentTarget;
+    this.props.selectElementAction(id);
+    // const shouldUpdate = gate.onGateClick();
+    // if(shouldUpdate)
+    //   this.updateElements(this.props.zoom);
+
+  }
+  
+  componentDidMount() {
+    const { canvas, viewport } = this.refs;
+    this.coords.setCanvasOffset(canvas);
+    viewport.addEventListener("wheel", CanvasController.updateZoom.bind(this));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -57,25 +100,18 @@ export default class Canvas extends Component {
   }
 
   updateZoom(zoom) {
-    this.drawingArea.updateSize(zoom);
-    this.drawingArea.clear(zoom);
     this.updateElements(zoom);
-
   }
 
-  onCanvasGateClick(e) {
-    const { id } = e.currentTarget;
-    const gate = _.find(this.gates, { id });
-    const shouldUpdate = gate.onGateClick();
-    if(shouldUpdate)
-      this.updateElements(this.props.zoom);
-  }
+  
 
   updateElements(zoom, ids) {
-    const elements = this.gates.concat(this.lines).map(m =>
+    const el = this.elements.map(m =>
       !ids || ids.includes(m.id) ? m.toStateObject(zoom) : _.find(this.state.elements, { id: m.id }) || m.toStateObject(zoom) 
-    );
-    this.setState({ elements });
+    )
+
+    // console.log(el);
+    this.setState({ elements: el });
   }
 
   onHover(e) {
@@ -99,17 +135,6 @@ export default class Canvas extends Component {
     CanvasController.dragGate.apply(this, [e, this.callback]);
   }
 
-  onCanvasClick(e) {
-    if(this.props.selected) {
-      CanvasController.createGate.apply(this, [e, this.props.selected, this.callback]);
-      this.props.onGateClick();
-    }
-
-    if(this.state.drawingLine) {
-      this.setState({ drawingLine: null });
-    }
-  }
-
   onTerminalClick({ terminal, gateId }, e) {
     e.stopPropagation();
     if(!this.state.drawingLine) {
@@ -129,6 +154,7 @@ export default class Canvas extends Component {
   }
 
   renderLine({ id, segments, lines, hasPower }) {
+    console.log(id, segments);
     return (
       <Line key={id} id={id} segments={segments} lines={lines} hasPower={hasPower}/>
     );
@@ -139,7 +165,7 @@ export default class Canvas extends Component {
   }
 
   renderGate({ id, style, coords, gateType, lines, state }) {
-    const { zoom } = this.props;
+    const { zoom, selected } = this.props;
     const props =  {
       id,
       style,
@@ -148,6 +174,7 @@ export default class Canvas extends Component {
       gateType,
       lines,
       state,
+      selected,
       key: id,
       isCanvas: true,
       onClick: this.onCanvasGateClick,
@@ -162,24 +189,48 @@ export default class Canvas extends Component {
     }
   }
 
+  getCanvasStyle() {
+    const { position: { x, y }, zoom } = this.props;
+    return {
+      top: `${PADDING - y}px`,
+      left: `${PADDING - x}px`,
+      height: CANVAS_DIMEN * zoom,
+      width: CANVAS_DIMEN * zoom
+    }
+  }
+
   render() {
-    const { c } = this.state;
-    
+    // console.log(this.state.elements);
     return (
-      <div className="canvas-viewport" ref="viewport">
-        <div ref="canvasContainer" className="canvas-container" onMouseMove={this.onHover}>
-          <div className="drawing-area">
-            <canvas
-              onMouseDown={this.onCanvasClick}
-              className="canvas"
-              ref="canvas"
-              >
-            </canvas>
-            {this.renderElements()}
-          </div>
-          <BottomControl x={c.x.toFixed(0)} y={c.y.toFixed(0)} zoom={this.props.zoom} onZoom={this.props.onZoom}/>
+      <div ref="viewport" className="canvas-viewport">
+        <div
+          draggable
+          ref="canvas"
+          className="drawing-area"
+          style={this.getCanvasStyle()}
+          onDragStart={this.onCanvasDragStart}
+          onDrag={this.onCanvasDrag}
+          onClick={this.onCanvasClick}
+          onMouseMove={this.onHover}>
+          {this.renderElements()}
         </div>
+        {/* <BottomControl x={c.x.toFixed(0)} y={c.y.toFixed(0)} zoom={this.props.zoom} onZoom={this.props.onZoom}/> */}
       </div>
     );
   }
 }
+
+export default connect(({ window, toolbox }) => {
+  return {
+    position: window.canvasPosition,
+    newElement: toolbox.selected,
+    zoom: window.zoom,
+    selected: window.selected
+  };
+}, {
+  selectItemAction,
+  setCanvasPosition,
+  updateZoomAction,
+  selectElementAction,
+  clearSelectionAction
+})(Canvas);

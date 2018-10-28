@@ -1,35 +1,31 @@
 import _ from 'lodash';
 
-import GateModel from "../models/GateModel";
 import Switch from "../models/gates/Switch";
-import constants from '../utils/constants';
 import LineModel from "../models/LineModel";
+import And from '../models/gates/And';
 
-const {
-  AND_GATE_HEIGHT,
-  AND_GATE_WIDTH
-} = constants;
+import { AND, SWITCH } from '../constants/gates';
 
 export default class CanvasController {
-  static createGate(e, selected, callback) {    
-    const { gates, coords, props: { zoom } } = this;
+  static createGate(e, selected) {    
+    const { coords, props: { zoom } } = this;
     const { pageX, pageY } = e;
     const xy = coords.windowToCanvas(pageX, pageY, zoom);
     let gate;
     
     switch(selected) {
-      case 'switch': gate = new Switch(xy); break;
-      default: gate = new GateModel(xy, selected); break;
+      case AND: gate = new And(xy); break;
+      case SWITCH: gate = new Switch(xy); break;
     }
     
-    gates.push(gate);
+    this.elements.push(gate);
     this.updateElements(zoom, [gate.id]);
   }
 
   static dragGateStart(e) {
-    const { gates, coords, props: { zoom }} = this;
+    const { elements, coords, props: { zoom }} = this;
     const { pageX, pageY, currentTarget: { id }} = e;
-    const el = _.find(gates, { id });
+    const el = _.find(elements, { id });
     el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
   }
 
@@ -37,8 +33,8 @@ export default class CanvasController {
     const { currentTarget: { id }, pageX, pageY } = e;
     if(!pageX && !pageY) return;
 
-    const { gates, state, coords, props: { zoom }} = this;
-    const gate = _.find(gates, { id });
+    const { state, coords, props: { zoom }} = this;
+    const gate = _.find(this.elements, { id });
     gate.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
 
     const elements = state.elements.map(el => {
@@ -58,25 +54,19 @@ export default class CanvasController {
 
   static createLine({ terminal, gateId }) {
       const { zoom } = this.props;
-      const gate = _.find(this.gates, { id: gateId });
+      const gate = _.find(this.elements, { id: gateId });
       const line = new LineModel(gate, terminal);
   
-      this.lines.push(line);
+      this.elements.push(line);
       gate.setTerminalLine(terminal, line);
       this.setState({ drawingLine: line });
       this.updateElements(zoom, [line.id, gate.id]);
-  
-      // const elements = [ ...this.state.elements ];
-      // elements.push(line.toStateObject(zoom));
-  
-      // console.log("createLine", elements);
-      // callback({ drawingLine: line, elements });
   }
 
   static finishLine({ terminal, gateId }) {
     const { zoom } = this.props;
-    const gate = _.find(this.gates, { id: gateId });
-    const line = _.find(this.lines, { id: this.state.drawingLine.id });
+    const gate = _.find(this.elements, { id: gateId });
+    const line = _.find(this.elements, { id: this.state.drawingLine.id });
     line.setEndGate(gate, terminal);
     gate.setTerminalLine(terminal, line);
     
@@ -85,5 +75,17 @@ export default class CanvasController {
     // callback({ drawingLine: null, elements: this.state.elements.map(el => 
     //   el.id == this.state.drawingLine.id ? this.state.drawingLine.toStateObject(zoom) : el
     // )});
+  }
+
+  static updateZoom(e) {
+    const step = .1;
+    
+    const { deltaY } = e;
+
+    let zoom = this.props.zoom + (deltaY < 0 ? 1 : -1) * step;
+    zoom = Math.min(Math.max(zoom, 0.5), 2);
+
+    this.props.updateZoomAction(zoom);
+    this.updateElements(zoom);
   }
 }

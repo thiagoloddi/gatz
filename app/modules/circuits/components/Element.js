@@ -2,23 +2,20 @@ import React, { PureComponent } from 'react'
 import c, { SWITCH } from '../constants/gates';
 import { TERMINAL_RADIUS } from '../constants/globals.constants';
 
-class Element extends PureComponent {
+export default class Element extends PureComponent {
 
   constructor(props) {
     super(props);
 
     this.onDragStart = this.onDragStart.bind(this);
     this.constants = c[props.gateType];
-  }
 
-  componentDidMount() {
-    const { HEIGHT, WIDTH } = this.constants;
-    this.refs.container.style.width = WIDTH + 'px';
-    this.refs.container.style.height = HEIGHT + 'px';
+
   }
   
   onDragStart(e) {
     e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
+    e.stopPropagation();
     if(this.props.onDragStart) this.props.onDragStart(e);
   }
 
@@ -41,18 +38,19 @@ class Element extends PureComponent {
   }
 
   render() {
-    const { style, id, onClick, onDrag, isCanvas } = this.props;
+    const { style = {}, id, onDrag, onClick, isCanvas, selected = [] } = this.props;
+    console.log(selected);
     return (
         <div 
-          className={`gate ${isCanvas ? '-canvas' : ''}`} 
-          draggable={id !== undefined}
-          onDrag={onDrag}
-          onDragStart={this.onDragStart}
-          onClick={onClick} 
-          id={id} 
           style={style}
+          className={`gate ${isCanvas ? '-canvas' : ''} ${selected.includes(id) ? '-selected' : ''}`} 
+          draggable={id !== undefined}
+          onDrag={e => { e.stopPropagation(); onDrag(e); }}
+          onDragStart={this.onDragStart}
+          onClick={onClick}
+          id={id} 
           ref="container">
-          <img draggable={false} src={`icons/${this.getIconName()}.svg`} />
+          <img id={id} draggable={false} src={`icons/${this.getIconName()}.svg`} />
           {this.renderTerminals()}
         </div>
     );
@@ -63,4 +61,8 @@ Element.defaultProps = {
   state: {}
 }
 
-export default Element;
+// export default connect(({ window }) => {
+//   return {
+//     selected: window.selected
+//   };
+// }, { addElementsToSelectionAction })(Gate);
