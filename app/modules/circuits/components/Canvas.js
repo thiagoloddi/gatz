@@ -8,7 +8,13 @@ import { PADDING, CANVAS_DIMEN } from '../constants/globals.constants';
 
 import { connect } from 'react-redux';
 import { selectItemAction } from '../../../actions/toolbox.actions';
-import { setCanvasPosition, updateZoomAction, selectElementAction, clearSelectionAction } from '../../../actions/window.actions';
+import {
+  setCanvasPosition,
+  updateZoomAction,
+  selectElementAction,
+  clearSelectionAction,
+  addElementToSelectionAction
+} from '../../../actions/window.actions';
 
 class Canvas extends Component {
 
@@ -32,11 +38,13 @@ class Canvas extends Component {
     this.onGateDragStart = this.onGateDragStart.bind(this);
     this.onHover = this.onHover.bind(this);
     this.onTerminalClick = this.onTerminalClick.bind(this);
-    this.onCanvasGateClick = this.onCanvasGateClick.bind(this);
-
-
+    
+    
     this.onCanvasDragStart = this.onCanvasDragStart.bind(this);
     this.onCanvasDrag = this.onCanvasDrag.bind(this);
+    this.onGateMouseDown = this.onGateMouseDown.bind(this);
+    this.onCanvasGateClick = this.onCanvasGateClick.bind(this);
+    this.onGateMouseUp = this.onGateMouseUp.bind(this);
   }
 
   onCanvasDragStart(e) {
@@ -60,7 +68,6 @@ class Canvas extends Component {
   }
 
   onCanvasClick(e) {
-    
     if(this.props.newElement) {
       
       CanvasController.createGate.apply(this, [e, this.props.newElement]);
@@ -71,20 +78,31 @@ class Canvas extends Component {
       this.setState({ drawingLine: null });
     }
 
-    if(this.props.selected.length) {
+    if(this.props.selected.length && !this.state.drawingLine) {
       this.props.clearSelectionAction();
     }
-
   }
 
   onCanvasGateClick(e) {
-    console.log('on canvas click');
-    const { id } = e.currentTarget;
-    this.props.selectElementAction(id);
-    // const shouldUpdate = gate.onGateClick();
-    // if(shouldUpdate)
-    //   this.updateElements(this.props.zoom);
+    e.stopPropagation();  
+  }
 
+  onGateMouseDown(e) {
+    e.stopPropagation();
+    const { id } = e.currentTarget;
+
+    switch(true) {
+      case e.ctrlKey: this.props.addElementToSelectionAction(id); break;
+      default: 
+        if(this.props.selected.length < 2)
+          this.props.selectElementAction(id); break;
+    }
+  }
+
+  onGateMouseUp(e) {
+    const { id } = e.currentTarget;
+    if(!e.ctrlKey)
+      this.props.selectElementAction(id);
   }
   
   componentDidMount() {
@@ -102,8 +120,6 @@ class Canvas extends Component {
   updateZoom(zoom) {
     this.updateElements(zoom);
   }
-
-  
 
   updateElements(zoom, ids) {
     const el = this.elements.map(m =>
@@ -137,6 +153,7 @@ class Canvas extends Component {
 
   onTerminalClick({ terminal, gateId }, e) {
     e.stopPropagation();
+    // this.props.clearSelectionAction();
     if(!this.state.drawingLine) {
       CanvasController.createLine.apply(this, [{ terminal, gateId }]);
     } else {
@@ -154,7 +171,6 @@ class Canvas extends Component {
   }
 
   renderLine({ id, segments, lines, hasPower }) {
-    console.log(id, segments);
     return (
       <Line key={id} id={id} segments={segments} lines={lines} hasPower={hasPower}/>
     );
@@ -177,10 +193,12 @@ class Canvas extends Component {
       selected,
       key: id,
       isCanvas: true,
-      onClick: this.onCanvasGateClick,
       onDragStart: this.onGateDragStart,
       onDrag: this.onGateDrag,
       onTerminalClick: this.onTerminalClick,
+      onMouseDown: this.onGateMouseDown,
+      onClick: this.onCanvasGateClick,
+      onMouseUp: this.onGateMouseUp
     };
 
     switch(gateType) {
@@ -232,5 +250,6 @@ export default connect(({ window, toolbox }) => {
   setCanvasPosition,
   updateZoomAction,
   selectElementAction,
-  clearSelectionAction
+  clearSelectionAction,
+  addElementToSelectionAction
 })(Canvas);

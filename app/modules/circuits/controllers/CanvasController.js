@@ -23,33 +23,41 @@ export default class CanvasController {
   }
 
   static dragGateStart(e) {
-    const { elements, coords, props: { zoom }} = this;
-    const { pageX, pageY, currentTarget: { id }} = e;
-    const el = _.find(elements, { id });
-    el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
+    const { elements, coords, props: { zoom, selected }} = this;
+    const { pageX, pageY } = e;
+
+    selected.forEach(id => {
+      const el = _.find(elements, { id });
+      el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
+    });
+
+
   }
 
-  static dragGate(e, callback) {
-    const { currentTarget: { id }, pageX, pageY } = e;
+  static dragGate(e) {
+    const { pageX, pageY } = e;
     if(!pageX && !pageY) return;
 
-    const { state, coords, props: { zoom }} = this;
-    const gate = _.find(this.elements, { id });
-    gate.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
-
-    const elements = state.elements.map(el => {
-      if(el.id == e.currentTarget.id && pageX && pageY) {
-        return gate.toStateObject(zoom);
-      }
-
-      for(let k in gate.lines) {
-        if(gate.lines[k] && gate.lines[k].id == el.id)
-          return gate.lines[k].toStateObject(zoom);
-      }
-
-      return el;
+    const { coords, props: { zoom, selected }} = this;
+    selected.forEach(id => {
+      const el = _.find(this.elements, { id });
+      el.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
     });
-    callback({ elements });
+
+    this.updateElements(zoom);
+    // const elements = state.elements.map(el => {
+    //   if(el.id == e.currentTarget.id && pageX && pageY) {
+    //     return gate.toStateObject(zoom);
+    //   }
+
+    //   for(let k in gate.lines) {
+    //     if(gate.lines[k] && gate.lines[k].id == el.id)
+    //       return gate.lines[k].toStateObject(zoom);
+    //   }
+
+    //   return el;
+    // });
+    // callback({ elements });
   }
 
   static createLine({ terminal, gateId }) {

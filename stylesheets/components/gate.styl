@@ -5,19 +5,22 @@
   .coords
     color black
 
-  .terminal
-    visibility hidden
+  .terminal-container
     position absolute
-    border 3px solid #3f3f3f
-    border-radius 50%
-    width 0
-    height 0
+    .terminal
+      visibility hidden
+      box-sizing content-box
+      position absolute
+      border 3px solid #3f3f3f
+      border-radius 50%
+      width 0
+      height 0
 
-    &.-connected
-      visibility visible
+      &.-connected
+        visibility visible
 
-    &.-power
-      border-color green
+      &.-power
+        border-color green
 
   img 
     height 100%
@@ -31,6 +34,7 @@
         border-color #3f3f3f
         &.-power
           border-color green
-
-  &.-selected
-    border 1px solid rgba(50, 50, 200, .5)
+  .selection
+    position absolute
+    top 0
+    left 0

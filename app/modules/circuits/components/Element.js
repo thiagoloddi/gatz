@@ -22,9 +22,30 @@ export default class Element extends PureComponent {
   renderTerminals() {
     if(this.props.isCanvas) {
       const { zoom, id, onTerminalClick = () => {}, lines, state } = this.props;
-      const r = TERMINAL_RADIUS * zoom;
-      return this.constants.TERMINALS.map(({ NAME, X, Y }, i) => 
-        <div className={`terminal ${lines[NAME] ? '-connected' : ''} ${state[NAME] ? '-power' : ''}`} key={i} onClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })} style={{ borderWidth: r + 'px', left: X * zoom - r + "px", top: Y * zoom - r + "px" }}></div>
+      const { INPUT_LENGTH } = this.constants;
+      let containerHeight = TERMINAL_RADIUS * 2 * zoom;
+      if(containerHeight % 2 == 0) containerHeight++;
+
+      return this.constants.TERMINALS.map(({ NAME, X, Y }, i) => {
+        const containerStyle = {
+          left: (NAME == 'OUT' ? X : X - TERMINAL_RADIUS) * zoom,
+          top: Y * zoom - containerHeight / 2,
+          width: (INPUT_LENGTH + TERMINAL_RADIUS) * zoom,
+          height: containerHeight,
+        };
+        const terminalStyle = {
+          borderWidth: TERMINAL_RADIUS * zoom,
+          [NAME == 'OUT' ? 'right' : 'left']: 0
+        };
+        return (
+          <div className="terminal-container" style={containerStyle} onClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })} >
+            <div
+              className={`terminal ${lines[NAME] ? '-connected' : ''} ${state[NAME] ? '-power' : ''}`} 
+              key={i}
+              style={terminalStyle}></div>
+          </div>
+        );
+      }
       );
     }
   }
@@ -37,19 +58,46 @@ export default class Element extends PureComponent {
     }
   }
 
-  render() {
-    const { style = {}, id, onDrag, onClick, isCanvas, selected = [] } = this.props;
+  renderSelection() {
+    const { style, selected, id } = this.props;
+    
+    
     console.log(selected);
+    if(selected.includes(id)) {
+      const { width, height } = style;
+      const offset = 0.2;
+      const widthOffset = offset * width; 
+      const heightOffset = offset * height; 
+      const svgStyle = {
+        width: width + widthOffset,
+        height: height + heightOffset,
+        top: -0.5 * heightOffset,
+        left: -0.5 * widthOffset
+      };
+      
+      return (
+        <svg className="selection" style={svgStyle}>
+          <rect width={svgStyle.width} height={svgStyle.height} style={{ strokeWidth: "2", stroke: "rgb(100, 100, 255)", fill: "transparent"}} />
+        </svg>
+      );
+    }
+  }
+
+  render() {
+    const { style = {}, id, onDrag, onMouseDown, isCanvas, onClick, onMouseUp } = this.props;
     return (
         <div 
           style={style}
-          className={`gate ${isCanvas ? '-canvas' : ''} ${selected.includes(id) ? '-selected' : ''}`} 
+          className={`gate ${isCanvas ? '-canvas' : ''}`} 
           draggable={id !== undefined}
           onDrag={e => { e.stopPropagation(); onDrag(e); }}
-          onDragStart={this.onDragStart}
           onClick={onClick}
+          onDragStart={this.onDragStart}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
           id={id} 
           ref="container">
+          {this.renderSelection()}
           <img id={id} draggable={false} src={`icons/${this.getIconName()}.svg`} />
           {this.renderTerminals()}
         </div>
@@ -58,11 +106,6 @@ export default class Element extends PureComponent {
 }
 
 Element.defaultProps = {
-  state: {}
+  state: {},
+  selected: []
 }
-
-// export default connect(({ window }) => {
-//   return {
-//     selected: window.selected
-//   };
-// }, { addElementsToSelectionAction })(Gate);

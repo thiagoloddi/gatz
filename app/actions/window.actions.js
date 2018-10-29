@@ -2,6 +2,7 @@ export const UPDATE_ZOOM = 'UPDATE_ZOOM';
 export const SELECT_ELEMENT = 'SELECT_ELEMENT';
 export const SET_CANVAS_POSITION = 'SET_CANVAS_POSITION';
 export const CLEAR_SELECTION = 'CLEAR_SELECTION';
+export const ADD_ELEMENT_TO_SELECTION = 'ADD_ELEMENT_TO_SELECTION';
 
 export const updateZoomAction = zoom => {
   return {
@@ -16,6 +17,13 @@ export const selectElementAction = el => {
     payload: el
   };
 };
+
+export const addElementToSelectionAction = els => {
+  return {
+    type: ADD_ELEMENT_TO_SELECTION,
+    payload: els
+  }
+}
 
 export const setCanvasPosition = (x, y) => {
   return {

@@ -1,0 +1,3 @@
+- Increase terminals click area
+- Change line to SVG
+- Edit line

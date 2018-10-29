@@ -52,10 +52,10 @@ export default class Element {
       id,
       style: {
         position: 'absolute',
-        height: HEIGHT * zoom + 'px',
-        width: WIDTH * zoom + 'px',
-        left: x * zoom + 'px',
-        top: y * zoom + 'px'
+        height: HEIGHT * zoom,
+        width: WIDTH * zoom,
+        left: x * zoom,
+        top: y * zoom
       },
       lines: _.mapValues(this.lines, l => !!l),
       state: { ...this.state },
