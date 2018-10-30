@@ -38,10 +38,9 @@ export default class Element extends PureComponent {
           [NAME == 'OUT' ? 'right' : 'left']: 0
         };
         return (
-          <div className="terminal-container" style={containerStyle} onClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })} >
+          <div className="terminal-container" style={containerStyle} onClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })} key={i}>
             <div
               className={`terminal ${lines[NAME] ? '-connected' : ''} ${state[NAME] ? '-power' : ''}`} 
-              key={i}
               style={terminalStyle}></div>
           </div>
         );
@@ -61,8 +60,6 @@ export default class Element extends PureComponent {
   renderSelection() {
     const { style, selected, id } = this.props;
     
-    
-    console.log(selected);
     if(selected.includes(id)) {
       const { width, height } = style;
       const offset = 0.2;
