@@ -1,12 +1,12 @@
 import { PADDING } from '../../globals.constants';
 
-export const HEIGHT = 40;
-export const WIDTH = 50;
+export const HEIGHT = 84;
+export const WIDTH = 104;
 
 export const TERMINALS = [
   {
     NAME: 'OUT',
-    X: PADDING + WIDTH - 1,
+    X: WIDTH - PADDING,
     Y: HEIGHT / 2
   }
 ];

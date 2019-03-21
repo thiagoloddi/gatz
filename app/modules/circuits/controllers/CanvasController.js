@@ -7,40 +7,42 @@ import And from '../models/gates/And';
 import { AND, SWITCH } from '../constants/gates';
 
 export default class CanvasController {
-  static createGate(e, selected) {    
-    const { coords, props: { zoom } } = this;
-    const { pageX, pageY } = e;
-    const xy = coords.windowToCanvas(pageX, pageY, zoom);
-    let gate;
-    
-    switch(selected) {
-      case AND: gate = new And(xy); break;
-      case SWITCH: gate = new Switch(xy); break;
-    }
-    
-    this.elements.push(gate);
-    this.updateElements(zoom, [gate.id]);
+
+  constructor(view) {
+    this.view = view;
+
+    this.updateZoom = this.updateZoom.bind(this);
   }
 
-  static dragGateStart(e) {
-    const { elements, coords, props: { zoom, selected }} = this;
-    const { pageX, pageY } = e;
 
+
+  createGate(e, selected) {    
+    const { coords, props: { zoom } } = this.view;
+    const { pageX, pageY } = e;
+    const xy = coords.windowToCanvas(pageX, pageY, zoom);
+    
+    switch(selected) {
+      case AND: return new And(xy);
+      case SWITCH: return new Switch(xy);
+    }
+  }
+
+  dragGateStart(e) {
+    const { coords, props: { zoom, selected, elements }} = view;
+    const { pageX, pageY } = e;
     selected.forEach(id => {
       const el = _.find(elements, { id });
       el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
     });
-
-
   }
 
-  static dragGate(e) {
+  dragGate(e) {
     const { pageX, pageY } = e;
     if(!pageX && !pageY) return;
 
-    const { coords, props: { zoom, selected }} = this;
+    const { coords, props: { zoom, selected, elements }} = view;
     selected.forEach(id => {
-      const el = _.find(this.elements, { id });
+      const el = _.find(elements, { id });
       el.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
     });
 
@@ -85,15 +87,14 @@ export default class CanvasController {
     // )});
   }
 
-  static updateZoom(e) {
+  updateZoom(e) {
     const step = .1;
     
     const { deltaY } = e;
+    const { view } = this;
 
-    let zoom = this.props.zoom + (deltaY < 0 ? 1 : -1) * step;
+    let zoom = view.props.zoom + (deltaY < 0 ? 1 : -1) * step;
     zoom = Math.min(Math.max(zoom, 0.5), 2);
-
-    this.props.updateZoomAction(zoom);
-    this.updateElements(zoom);
+    view.props.updateZoomAction(zoom);
   }
 }

@@ -3,7 +3,7 @@ import _ from "lodash";
 import c from '../constants/gates';
  
 export default class Element {
-  constructor(coords, type, id) {
+  constructor(coords, type, category, id) {
     this.id = id || uuidv4();
     this.constants = c[type];
     this.x = coords.x - this.constants.WIDTH / 2;
@@ -18,6 +18,7 @@ export default class Element {
       A: false, B: false, OUT: false
     }
     this.type = type;
+    this.category = category;
   }
 
   getTerminalCoords(terminal) {
@@ -43,25 +44,25 @@ export default class Element {
     this.lines[terminalId] = line;
   }
 
-  toStateObject(zoom, extra) {
-    if(!zoom) throw new Error(`Zoom is required in toStateObject ${this.type} ${this.id}`);
-    const { x, y, id, constants: { WIDTH, HEIGHT }, type } = this;
-    return {
-      gateType: type,
-      elType: 'GATE',
-      id,
-      style: {
-        position: 'absolute',
-        height: HEIGHT * zoom,
-        width: WIDTH * zoom,
-        left: x * zoom,
-        top: y * zoom
-      },
-      lines: _.mapValues(this.lines, l => !!l),
-      state: { ...this.state },
-      ...extra
-    }
-  }
+  // toStateObject(zoom, extra) {
+  //   if(!zoom) throw new Error(`Zoom is required in toStateObject ${this.type} ${this.id}`);
+  //   const { x, y, id, constants: { WIDTH, HEIGHT }, type } = this;
+  //   return {
+  //     gateType: type,
+  //     elType: 'GATE',
+  //     id,
+  //     style: {
+  //       position: 'absolute',
+  //       height: Math.round(HEIGHT * zoom),
+  //       width: Math.round(WIDTH * zoom),
+  //       left: Math.round(x * zoom),
+  //       top: Math.round(y * zoom)
+  //     },
+  //     lines: _.mapValues(this.lines, l => !!l),
+  //     state: { ...this.state },
+  //     ...extra
+  //   }
+  // }
 
   updatePower() {
     const { lines, state } = this;

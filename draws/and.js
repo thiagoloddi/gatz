@@ -1,7 +1,7 @@
 draw = "and";
 
-var GATE_WIDTH = 60;
-var GATE_HEIGHT = 40;
+var GATE_WIDTH = 120;
+var GATE_HEIGHT = 80;
 
 var PADDING = 2;
 var INPUT_LENGTH = 0.15 * GATE_WIDTH;
@@ -14,6 +14,7 @@ function and() {
   // INPUT A
   var pathA = new Path();
   pathA.strokeColor = 'black';
+  pathA.strokeWidth = 2;
   var inputAStart = new Point(PADDING, INPUT_OFFSET + PADDING);
   pathA.moveTo(inputAStart);
   pathA.lineTo(inputAStart + [ INPUT_LENGTH, 0 ]);
@@ -21,6 +22,7 @@ function and() {
   // INPUT B
   var pathB = new Path();
   pathB.strokeColor = 'black';
+  pathB.strokeWidth = 2;
   var inputBStart = new Point(PADDING, GATE_HEIGHT - INPUT_OFFSET + PADDING);
   pathB.moveTo(inputBStart);
   pathB.lineTo(inputBStart + [ INPUT_LENGTH, 0 ]);
@@ -28,6 +30,7 @@ function and() {
   // GATE
   var pathGate = new Path();
   pathGate.strokeColor = 'black';
+  pathGate.strokeWidth = 2;
   pathGate.fillColor = 'white';
   var gateStart = new Point(INPUT_LENGTH + PADDING, PADDING);
   pathGate.moveTo(gateStart);
@@ -39,6 +42,7 @@ function and() {
 
   var pathOut = new Path();
   pathOut.strokeColor = 'black';
+  pathOut.strokeWidth = 2;
   var outStart = new Point(PADDING + INPUT_LENGTH + GATE_LENGTH + RADIUS, PADDING + RADIUS);
   pathOut.moveTo(outStart);
   pathOut.lineTo(outStart + [ INPUT_LENGTH, 0 ]);

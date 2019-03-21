@@ -5,5 +5,6 @@ export default  {
   and, switch: _switch
 };
 
+export const GATE = "GATE";
 export const AND = 'and';
 export const SWITCH = 'switch';

@@ -1,4 +1,4 @@
 export default {
-  and: { width: 64, height: 44 },
-  switch: { width: 54, height: 44 }
+  and: { width: 124, height: 84 },
+  switch: { width: 104, height: 84 }
 }
