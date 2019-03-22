@@ -3,6 +3,7 @@ import injectSheet from 'react-jss';
 
 import c from '../constants/gates';
 import Terminal from './Terminal';
+import Selection from './Selection';
 
 const style = {
   gate: ({ gate, zoom }) => {
@@ -70,24 +71,11 @@ class Gate extends PureComponent {
   }
 
   renderSelection() {
-    const { style, selected, id } = this.props;
+    const { gate, selected, zoom } = this.props;
     
-    if(selected.includes(id)) {
-      const { width, height } = style;
-      const offset = 0.2;
-      const widthOffset = offset * width; 
-      const heightOffset = offset * height; 
-      const svgStyle = {
-        width: width + widthOffset,
-        height: height + heightOffset,
-        top: -0.5 * heightOffset,
-        left: -0.5 * widthOffset
-      };
-      
+    if(gate && selected) {
       return (
-        <svg className="selection" style={svgStyle}>
-          <rect width={svgStyle.width} height={svgStyle.height} style={{ strokeWidth: "2", stroke: "rgb(100, 100, 255)", fill: "transparent"}} />
-        </svg>
+        <Selection zoom={zoom} height={this.constants.HEIGHT} width={this.constants.WIDTH} />
       );
     }
   }

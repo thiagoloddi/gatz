@@ -28,11 +28,12 @@ export default class CanvasController {
   }
 
   dragGateStart(e) {
-    const { coords, props: { zoom, selected, elements }} = view;
+    const { coords, props: { zoom, selected, elements }} = this.view;
     const { pageX, pageY } = e;
     selected.forEach(id => {
-      const el = _.find(elements, { id });
+      const el = _.cloneDeep(_.find(elements, { id }));
       el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
+      this.view.props.updateElementAction(el);
     });
   }
 
@@ -40,13 +41,14 @@ export default class CanvasController {
     const { pageX, pageY } = e;
     if(!pageX && !pageY) return;
 
-    const { coords, props: { zoom, selected, elements }} = view;
+    const { coords, props: { zoom, selected, elements }} = this.view;
     selected.forEach(id => {
-      const el = _.find(elements, { id });
+      const el = _.cloneDeep(_.find(elements, { id }));
       el.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
+      this.view.props.updateElementAction(el);
     });
 
-    this.updateElements(zoom);
+    // this.updateElements(zoom);
     // const elements = state.elements.map(el => {
     //   if(el.id == e.currentTarget.id && pageX && pageY) {
     //     return gate.toStateObject(zoom);
@@ -62,9 +64,9 @@ export default class CanvasController {
     // callback({ elements });
   }
 
-  static createLine({ terminal, gateId }) {
-      const { zoom } = this.props;
-      const gate = _.find(this.elements, { id: gateId });
+  createLine({ terminal, gateId }) {
+      const { zoom, elements } = view.props;
+      const gate = _.find(elements, { id: gateId });
       const line = new LineModel(gate, terminal);
   
       this.elements.push(line);

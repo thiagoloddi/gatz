@@ -16,7 +16,7 @@ import {
   addElementToSelectionAction
 } from '../../../actions/window.actions';
 
-import { addElementAction } from '../../../actions/element.actions';
+import { addElementAction, updateElementAction } from '../../../actions/element.actions';
 
 class Canvas extends Component {
 
@@ -161,7 +161,7 @@ class Canvas extends Component {
     e.stopPropagation();
     // this.props.clearSelectionAction();
     if(!this.state.drawingLine) {
-      CanvasController.createLine.apply(this, [{ terminal, gateId }]);
+      this.controller.createLine({ terminal, gateId });
     } else {
       CanvasController.finishLine.apply(this, [{ terminal, gateId }]);
     }
@@ -193,6 +193,7 @@ class Canvas extends Component {
       zoom,
       type: gate.type,
       key: gate.id,
+      selected: selected.includes(gate.id),
       isCanvas: true,
       onDragStart: this.onGateDragStart,
       onDrag: this.onGateDrag,
@@ -253,5 +254,6 @@ export default connect(({ window, toolbox, elements }) => {
   selectElementAction,
   clearSelectionAction,
   addElementAction,
-  addElementToSelectionAction
+  addElementToSelectionAction,
+  updateElementAction
 })(Canvas);

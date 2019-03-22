@@ -22,8 +22,7 @@ export default (state = INITIAL_STATE, { type, payload }) => {
     case CLEAR_SELECTION: return { ...state, selected: [] };
     case SET_CANVAS_POSITION: return { ...state, canvasPosition: payload };
     case ADD_ELEMENT_TO_SELECTION: 
-      const selected = state.selected.map(e => e);
-      selected.push(payload);
+      const selected =  [...state.selected, payload ];
       return { ...state, selected: _.uniq(selected) };
     
     default: return state;
