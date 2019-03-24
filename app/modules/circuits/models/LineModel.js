@@ -1,6 +1,9 @@
 import uuid from 'uuid/v4';
 import { LINE_WIDTH } from '../constants/globals.constants';
 
+
+const LINE = "LINE";
+
 export default class LineModel {
   constructor(gate, terminal, id) {
     const startPosition = gate.getTerminalCoords(terminal);
@@ -14,6 +17,7 @@ export default class LineModel {
     this.endGate = null;
     this.endTerminal = null;
     this.hasPower = false;
+    this.category = LINE;
   }
 
   setEndPosition(endPosition) {
@@ -50,7 +54,7 @@ export default class LineModel {
           p3 = { x: dx / 2, y: dy };
           p4 = { x: dx, y: dy };
           segments.push({ s: p1, e: p2 });
-          segments.push({ s: p3, e: p2 });
+          segments.push({ s: p2, e: p3 });
           segments.push({ s: p3, e: p4 });
         } 
         // top
@@ -113,34 +117,21 @@ export default class LineModel {
     }
   }
 
-  getLinesStyle(zoom) {
-    const { start, end } = this;
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
+  getHeight() {
+    return Math.abs(this.end.y - this.start.y);
+  }
 
-    if(dx > 0) {
-      return {
-        height: Math.abs(dy) * zoom + 'px',
-        width: Math.abs(dx) * zoom + 'px',
-        top: (start.y < end.y ? start.y : end.y) * zoom + 'px',
-        left: start.x * zoom + 'px',
-      };
-    }
-    else if(dy > 0) {
-      return {
-        height: Math.abs(dy) * zoom + 'px',
-        width: Math.abs(dx) * zoom + 'px',
-        top: start.y * zoom + 'px',
-        left: end.x * zoom + 'px'
-      }
-    }
-    else {
-      return {
-        height: Math.abs(dy) * zoom + 'px',
-        width: Math.abs(dx) * zoom + 'px',
-        top: end.y * zoom + 'px',
-        left: end.x * zoom + 'px'
-      };
-    }
+  getWidth() {
+    return Math.abs(this.end.x - this.start.x);
+  }
+
+  getXOrigin() {
+    const { start, end } = this;
+    return end.x > start.x ? start.x : end.x;
+  }
+
+  getYOrigin() {
+    const { start, end } = this;
+    return end.y > start.y ? start.y : end.y;
   }
 }

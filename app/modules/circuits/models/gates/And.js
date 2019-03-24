@@ -3,6 +3,6 @@ import Element from "../Element";
 
 export default class And extends Element {
   constructor(xy) {
-    super(xy, AND, GATE);
+    super(xy, AND);
   }
 }

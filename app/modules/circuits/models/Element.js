@@ -1,6 +1,6 @@
 import uuidv4 from 'uuid/v4';
 import _ from "lodash";
-import c from '../constants/gates';
+import c, { GATE } from '../constants/gates';
  
 export default class Element {
   constructor(coords, type, category, id) {
@@ -18,7 +18,7 @@ export default class Element {
       A: false, B: false, OUT: false
     }
     this.type = type;
-    this.category = category;
+    this.category = GATE;
   }
 
   getTerminalCoords(terminal) {

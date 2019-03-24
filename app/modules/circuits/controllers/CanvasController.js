@@ -65,28 +65,25 @@ export default class CanvasController {
   }
 
   createLine({ terminal, gateId }) {
-      const { zoom, elements } = view.props;
+      const { elements } = this.view.props;
       const gate = _.find(elements, { id: gateId });
       const line = new LineModel(gate, terminal);
   
-      this.elements.push(line);
       gate.setTerminalLine(terminal, line);
-      this.setState({ drawingLine: line });
-      this.updateElements(zoom, [line.id, gate.id]);
+      this.view.props.addElementAction(line);
+      this.view.setState({ drawingLine: line });
   }
 
   static finishLine({ terminal, gateId }) {
-    const { zoom } = this.props;
-    const gate = _.find(this.elements, { id: gateId });
-    const line = _.find(this.elements, { id: this.state.drawingLine.id });
-    line.setEndGate(gate, terminal);
-    gate.setTerminalLine(terminal, line);
+    // const { zoom } = this.props;
+    // const gate = _.find(this.elements, { id: gateId });
+    // const line = _.find(this.elements, { id: this.state.drawingLine.id });
+    // line.setEndGate(gate, terminal);
+    // gate.setTerminalLine(terminal, line);
     
-    this.setState({ drawingLine: null });
-    this.updateElements(zoom, [gate.id, line.id ]);
-    // callback({ drawingLine: null, elements: this.state.elements.map(el => 
-    //   el.id == this.state.drawingLine.id ? this.state.drawingLine.toStateObject(zoom) : el
-    // )});
+    // this.setState({ drawingLine: null });
+    // this.updateElements(zoom, [gate.id, line.id ]);
+    
   }
 
   updateZoom(e) {

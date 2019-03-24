@@ -31,6 +31,7 @@ class Gate extends PureComponent {
 
     this.onDragStart = this.onDragStart.bind(this);
     this.constants = c[props.type];
+
   }
   
   onDragStart(e) {
@@ -41,7 +42,7 @@ class Gate extends PureComponent {
 
   renderTerminals() {
     if(this.props.isCanvas) {
-      const { zoom, id, onTerminalClick = () => {}} = this.props;
+      const { zoom, gate, onTerminalClick = () => {}} = this.props;
 
       return this.constants.TERMINALS.map(({ NAME, X, Y }) => {
         const position = { 
@@ -53,8 +54,8 @@ class Gate extends PureComponent {
           <Terminal
             position={position}
             zoom={zoom}
-            id={id}
-            onTerminalClick={onTerminalClick.bind(null, { terminal: NAME, gateId: id })}
+            id={gate.id}
+            onTerminalClick={onTerminalClick.bind(null, { terminal: NAME, gateId: gate.id })}
           />
         );
       }

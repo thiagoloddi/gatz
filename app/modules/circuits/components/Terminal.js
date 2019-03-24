@@ -10,7 +10,7 @@ const style = {
     return ({
       boxSizing: 'content-box',
       position: 'absolute',
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      backgroundColor: 'white',
       left: Math.round((position.x - TERMINAL_SIZE / 2) * zoom),
       top: Math.round((position.y - TERMINAL_SIZE / 2) * zoom),
       border: `${Math.round(zoom * TERMINAL_BORDER)}px solid rgba(0, 0, 0, 0.3)`,

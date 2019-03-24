@@ -117,35 +117,16 @@ class Canvas extends Component {
     viewport.addEventListener("wheel", this.controller.updateZoom);
   }
 
-  // componentWillReceiveProps(nextProps) {
-  //   if(this.props.zoom != nextProps.zoom) {
-  //     this.updateZoom(nextProps.zoom);
-  //   }
-  // }
-
-  // updateZoom(zoom) {
-  //   this.updateView(zoom);
-  // }
-
-  // updateView(zoom, ids) {
-  //   const el = this.elements.map(m =>
-  //     !ids || ids.includes(m.id) ? m.toStateObject(zoom) : _.find(this.state.elements, { id: m.id }) || m.toStateObject(zoom) 
-  //   )
-
-  //   // console.log(el);
-  //   this.setState({ elements: el });
-  // }
-
   onHover(e) {
     const { pageX, pageY } = e;
     const c = this.coords.windowToCanvas(pageX, pageY, this.props.zoom);
     this.setState({ c });
 
-    const { drawingLine } = this.state;
+    let { drawingLine } = this.state;
     if(drawingLine) {
-      const { zoom } = this.props;
+      drawingLine = _.cloneDeep(drawingLine);
       drawingLine.setEndPosition(c);
-      this.updateView(zoom, [drawingLine.id]);
+      this.props.updateElementAction(drawingLine);
     }
   }
 
@@ -176,9 +157,10 @@ class Canvas extends Component {
     });
   }
 
-  renderLine({ id, segments, lines, hasPower }) {
+  renderLine(line) {
+    const { zoom } = this.props;
     return (
-      <Line key={id} id={id} segments={segments} lines={lines} hasPower={hasPower}/>
+      <Line key={line.id} line={line} zoom={zoom}/>
     );
   }
 
