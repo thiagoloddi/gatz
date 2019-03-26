@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import injectSheet from 'react-jss';
 import Segment from './Segment';
-import { LINE_WIDTH } from '../constants/globals.constants';
 
 const style = {
   container: ({ line, zoom }) => ({

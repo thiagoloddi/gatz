@@ -34,10 +34,6 @@ export default class Element {
   updatePosition({ x, y }) {
     this.x = x - this.clickOffset.x;
     this.y = y - this.clickOffset.y;
-
-    for(let k in this.lines) {
-      if(this.lines[k])  this.lines[k].updatePosition();
-    }
   }
 
   setTerminalLine(terminalId, line) {

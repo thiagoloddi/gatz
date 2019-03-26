@@ -34,7 +34,6 @@ class Canvas extends Component {
       drawingLine: false
     };
 
-    this.callback = this.callback.bind(this);
     this.onCanvasClick = this.onCanvasClick.bind(this);
     this.onGateDrag = this.onGateDrag.bind(this);
     this.onGateDragStart = this.onGateDragStart.bind(this);
@@ -73,6 +72,7 @@ class Canvas extends Component {
 
   onCanvasClick(e) {
     const { controller, props, state } = this;
+    console.log('canvas click', state.drawingLine);
     if(props.newElement) {
       props.selectItemAction(null);
       const gate = controller.createGate(e, props.newElement);
@@ -139,12 +139,13 @@ class Canvas extends Component {
   }
 
   onTerminalClick({ terminal, gateId }, e) {
+    console.log('terminal click', this.state.drawingLine);
     e.stopPropagation();
     // this.props.clearSelectionAction();
     if(!this.state.drawingLine) {
       this.controller.createLine({ terminal, gateId });
     } else {
-      CanvasController.finishLine.apply(this, [{ terminal, gateId }]);
+      this.controller.finishLine({ terminal, gateId });
     }
   }
 
@@ -162,10 +163,6 @@ class Canvas extends Component {
     return (
       <Line key={line.id} line={line} zoom={zoom}/>
     );
-  }
-
-  callback(state) {
-    this.setState(state);
   }
 
   renderGate(gate) {

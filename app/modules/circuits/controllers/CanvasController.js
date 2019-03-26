@@ -14,8 +14,6 @@ export default class CanvasController {
     this.updateZoom = this.updateZoom.bind(this);
   }
 
-
-
   createGate(e, selected) {    
     const { coords, props: { zoom } } = this.view;
     const { pageX, pageY } = e;
@@ -42,48 +40,50 @@ export default class CanvasController {
     if(!pageX && !pageY) return;
 
     const { coords, props: { zoom, selected, elements }} = this.view;
+    const cachedLines = {};
+
     selected.forEach(id => {
-      const el = _.cloneDeep(_.find(elements, { id }));
-      el.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
-      this.view.props.updateElementAction(el);
+      const gate = _.cloneDeep(_.find(elements, { id }));
+      
+      gate.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
+
+      this.view.props.updateElementAction(gate);
+
+      _.forEach(gate.lines, (lineId, terminal) => {
+        if(lineId) {
+          if(!cachedLines[lineId]) cachedLines[lineId] = _.find(elements, { id: lineId }).clone();
+          const line = cachedLines[lineId];
+          line.updatePosition(gate.getTerminalCoords(terminal), gate.id);
+          this.view.props.updateElementAction(line);
+        }
+      });
     });
-
-    // this.updateElements(zoom);
-    // const elements = state.elements.map(el => {
-    //   if(el.id == e.currentTarget.id && pageX && pageY) {
-    //     return gate.toStateObject(zoom);
-    //   }
-
-    //   for(let k in gate.lines) {
-    //     if(gate.lines[k] && gate.lines[k].id == el.id)
-    //       return gate.lines[k].toStateObject(zoom);
-    //   }
-
-    //   return el;
-    // });
-    // callback({ elements });
   }
 
   createLine({ terminal, gateId }) {
       const { elements } = this.view.props;
-      const gate = _.find(elements, { id: gateId });
-      const line = new LineModel(gate, terminal);
+      const gate = _.cloneDeep(_.find(elements, { id: gateId }));
+      const line = new LineModel(gate.id, gate.getTerminalCoords(terminal), terminal);
   
-      gate.setTerminalLine(terminal, line);
+      gate.setTerminalLine(terminal, line.id);
+      
       this.view.props.addElementAction(line);
+      this.view.props.updateElementAction(gate);
       this.view.setState({ drawingLine: line });
   }
 
-  static finishLine({ terminal, gateId }) {
-    // const { zoom } = this.props;
-    // const gate = _.find(this.elements, { id: gateId });
-    // const line = _.find(this.elements, { id: this.state.drawingLine.id });
-    // line.setEndGate(gate, terminal);
-    // gate.setTerminalLine(terminal, line);
+  finishLine({ terminal, gateId }) {
+    const { elements } = this.view.props;
+
+    const gate = _.cloneDeep(_.find(elements, { id: gateId }));
+    const line = _.cloneDeep(_.find(elements, { id: this.view.state.drawingLine.id }));
+
+    line.setEndGate(gate.id, terminal, gate.getTerminalCoords(terminal));
+    gate.setTerminalLine(terminal, line.id);
     
-    // this.setState({ drawingLine: null });
-    // this.updateElements(zoom, [gate.id, line.id ]);
-    
+    this.view.props.updateElementAction(gate);
+    this.view.props.updateElementAction(line);
+    this.view.setState({ drawingLine: null });
   }
 
   updateZoom(e) {

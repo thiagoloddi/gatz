@@ -1,12 +1,12 @@
 import uuid from 'uuid/v4';
 import { LINE_WIDTH } from '../constants/globals.constants';
-
+import _ from 'lodash';
 
 const LINE = "LINE";
 
 export default class LineModel {
-  constructor(gate, terminal, id) {
-    const startPosition = gate.getTerminalCoords(terminal);
+  constructor(gate, coords, terminal, id) {
+    const startPosition = coords;
     this.start = startPosition;
     this.end = startPosition;
     this.segments = [{ s: { ...this.start }, e: { ...this.start }}]
@@ -24,16 +24,16 @@ export default class LineModel {
     this.end = endPosition;
   }
 
-  setEndGate(gate, terminal) {
-    this.endGate = gate;
+  setEndGate(gateId, terminal, coords) {
+    this.endGate = gateId;
     this.endTerminal = terminal;
-    this.end = gate.getTerminalCoords(terminal);
+    this.end = coords;
   }
 
-  updatePosition() {
-    this.start = this.startGate.getTerminalCoords(this.startTerminal);
-    if(this.endGate) {
-      this.end = this.endGate.getTerminalCoords(this.endTerminal);
+  updatePosition(coords, gateId) {
+    switch(gateId) {
+      case this.startGate: this.start = coords; break;
+      case this.endGate: this.end = coords; break;
     }
   }
 
@@ -133,5 +133,9 @@ export default class LineModel {
   getYOrigin() {
     const { start, end } = this;
     return end.y > start.y ? start.y : end.y;
+  }
+
+  clone() {
+    return _.cloneDeep(this);
   }
 }
