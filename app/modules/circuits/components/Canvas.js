@@ -45,7 +45,6 @@ class Canvas extends Component {
     this.onCanvasDrag = this.onCanvasDrag.bind(this);
     this.onGateMouseDown = this.onGateMouseDown.bind(this);
     this.onCanvasGateClick = this.onCanvasGateClick.bind(this);
-    this.onGateMouseUp = this.onGateMouseUp.bind(this);
 
     this.controller = new CanvasController(this);
   }
@@ -97,18 +96,9 @@ class Canvas extends Component {
     e.stopPropagation();
     const { id } = e.currentTarget;
 
-    switch(true) {
-      case e.ctrlKey: this.props.addElementToSelectionAction(id); break;
-      default: 
-        if(this.props.selected.length < 2)
-          this.props.selectElementAction(id); break;
+    if(e.ctrlKey) {
+      this.props.addElementToSelectionAction(id);
     }
-  }
-
-  onGateMouseUp(e) {
-    const { id } = e.currentTarget;
-    if(!e.ctrlKey)
-      this.props.selectElementAction(id);
   }
   
   componentDidMount() {
@@ -178,8 +168,7 @@ class Canvas extends Component {
       onDrag: this.onGateDrag,
       onTerminalClick: this.onTerminalClick,
       onMouseDown: this.onGateMouseDown,
-      onClick: this.onCanvasGateClick,
-      onMouseUp: this.onGateMouseUp
+      onClick: this.onCanvasGateClick
     };
 
     switch(gate.type) {

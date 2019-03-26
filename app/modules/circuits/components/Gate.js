@@ -82,7 +82,7 @@ class Gate extends PureComponent {
   }
 
   render() {
-    const { style = {}, onDrag, onMouseDown, onClick, onMouseUp, classes, gate } = this.props;
+    const { style = {}, onDrag, onMouseDown, onClick, classes, gate } = this.props;
     const id = gate ? gate.id : undefined;
     return (
         <div 
@@ -93,7 +93,6 @@ class Gate extends PureComponent {
           onClick={onClick}
           onDragStart={this.onDragStart}
           onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
           id={id}
           ref="container">
           {this.renderSelection()}
