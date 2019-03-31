@@ -16,19 +16,15 @@ class Toolbox extends Component {
     this.onItemClick = this.onItemClick.bind(this);
   }
 
-  onItemClick(item) {
-    this.props.selectItemAction(item == this.props.selected ? null : item);
-  } 
-
   render() {
     return (
       <div ref="toolbox" className="tool-box">
         <SearchBar />
         <ToolboxSection title="Logic Gates">
-          <ToolboxItem gateType={AND} onGateClick={this.onItemClick} selected={this.props.selected} />
+          <ToolboxItem gateType={AND} selected={this.props.selected} />
         </ToolboxSection>
         <ToolboxSection title="Power Sources">
-          <ToolboxItem gateType={SWITCH} onGateClick={this.onItemClick} selected={this.props.selected} />
+          <ToolboxItem gateType={SWITCH} selected={this.props.selected} />
         </ToolboxSection>
         {/* 
          */}
