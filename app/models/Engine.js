@@ -7,4 +7,8 @@ export default class Engine {
 
     this.elements = [];
   }
+
+  addElement(el) {
+    this.elements.push(el);
+  }
 }

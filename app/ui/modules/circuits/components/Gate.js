@@ -12,13 +12,14 @@ import { setCoordsAction, addElementToSelectionAction } from '../../../actions/w
 import { updateElementAction } from '../../../actions/element.actions';
 
 const style = {
-  gate: ({ zoom, gate }) => {
-    if(gate) {
-      const { x, y, constants: { WIDTH, HEIGHT }} = gate;
+  gate: ({ zoom, position, dimensions, toolbox }) => {
+    if(!toolbox) {
+      const { x, y } = position;
+      const { width, height } = dimensions;
       return {
         position: 'absolute',
-        height: Math.round(HEIGHT * zoom),
-        width: Math.round(WIDTH * zoom),
+        height: Math.round(height * zoom),
+        width: Math.round(width * zoom),
         left: Math.round(x * zoom),
         top: Math.round(y * zoom)
       };
@@ -77,18 +78,18 @@ class Gate extends PureComponent {
 
   renderTerminals() {
     if(!this.props.toolbox) {
-      const { zoom, gate } = this.props;
+      const { zoom, id } = this.props;
 
-      return this.constants.TERMINALS.map(({ NAME, X, Y }) => {
+      return this.constants.TERMINALS.map(({ NAME, X, Y }, i) => {
         const position = { x: X, y: Y };
 
         return (
           <Terminal
             position={position}
             zoom={zoom}
-            id={gate.id}
             name={NAME}
-            gateId={gate.id}
+            gateId={id}
+            key={id + i}
           />
         );
       });
@@ -104,8 +105,8 @@ class Gate extends PureComponent {
   }
 
   renderSelection() {
-    const { gate, selected, zoom } = this.props;
-    if(gate && selected.includes(gate.id)) {
+    const { selected, zoom, id, toolbox } = this.props;
+    if(!toolbox && selected.includes(id)) {
       return (
         <Selection zoom={zoom} height={this.constants.HEIGHT} width={this.constants.WIDTH} />
       );
@@ -113,8 +114,7 @@ class Gate extends PureComponent {
   }
 
   render() {
-    const { classes, gate } = this.props;
-    const id = gate ? gate.id : undefined;
+    const { classes, gate, id } = this.props;
     return (
         <div 
           className={classes.gate} 
@@ -138,9 +138,9 @@ Gate.defaultProps = {
   selected: []
 };
 
-const mapStateToProps = ({ window, elements }) => {
+const mapStateToProps = ({ window, elements, viewport }) => {
   return ({
-    zoom: window.zoom,
+    zoom: viewport.zoom,
     selected: window.selected,
     elements: elements.all,
     coords: window.coords

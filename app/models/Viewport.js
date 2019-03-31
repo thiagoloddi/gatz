@@ -7,6 +7,14 @@ export default class Viewport {
     this.dragStart = { x: 0, y: 0 };
   }
 
+  windowToCanvas(pageX, pageY) {
+    const { canvasOffset, position, zoom } = this;
+    return { 
+      x: (pageX - canvasOffset.x + position.x) / zoom, 
+      y: (pageY - canvasOffset.y + position.y) / zoom 
+    };
+  }
+
   setCanvasOffset(x, y) {
     this.canvasOffset = { x, y };
   }

@@ -29,10 +29,7 @@ import ViewportController from '../../../../controllers/ViewportController';
 import GateController from '../../../../controllers/GateController';
 
 const style = {
-  canvas: ({ position: { x, y, }, zoom }) => {
-    console.log('zoom: ', zoom);
-    
-    return ({
+  canvas: ({ position: { x, y, }, zoom }) => ({
     top: `${-1 * y}px`,
     left: `${-1 * x}px`,
     height: CANVAS_DIMEN * zoom,
@@ -41,7 +38,7 @@ const style = {
     border: '1px solid #d6d6d6',
     backgroundColor: 'white',
     boxSizing: 'content-box'
-  })}
+  })
 }
 
 class Canvas extends Component {
@@ -60,7 +57,7 @@ class Canvas extends Component {
     this.controller = new CanvasController(this);
 
     this.viewportController = new ViewportController(props);
-    this.gateController = new GateController();
+    this.gateController = new GateController(props);
   }
 
   onCanvasDragStart(e) {
@@ -138,15 +135,10 @@ class Canvas extends Component {
   }
 
   renderGate(gate) {
-    const props =  {
-      gate,
-      type: gate.type,
-      key: gate.id,
-    };
 
     switch(gate.type) {
       // case SWITCH: return <PowerSource {...props} on={on}/>;
-      default: return <Gate {...props} />;
+      default: return <Gate {...gate} key={gate.id} />;
     }
   }
 
