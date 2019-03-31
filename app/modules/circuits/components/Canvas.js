@@ -57,10 +57,6 @@ class Canvas extends Component {
       props.clearSelectionAction();
     }
   }
-
-  newMethods() {
-    
-  }
   
   componentDidMount() {
     const { canvas, viewport } = this.refs;
