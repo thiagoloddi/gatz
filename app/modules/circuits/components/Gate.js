@@ -10,7 +10,6 @@ import GateController from '../controllers/GateController';
 import Coordinates from '../models/Coordinates';
 import { setCoordsAction, addElementToSelectionAction } from '../../../actions/window.actions';
 import { updateElementAction } from '../../../actions/element.actions';
-import { selectItemAction } from '../../../actions/toolbox.actions';
 
 const style = {
   gate: ({ zoom, gate }) => {
@@ -73,11 +72,7 @@ class Gate extends PureComponent {
   }
 
   onClick(e) {
-    e.stopPropagation();
-
-    if(this.props.toolbox) {
-      this.controller.selectItem(this.props.type);
-    }
+    if(!this.props.toolbox) e.stopPropagation();
   } 
 
   renderTerminals() {
@@ -153,6 +148,6 @@ const mapStateToProps = ({ window, elements }) => {
 };
 
 export default compose(
-  connect(mapStateToProps, { setCoordsAction, updateElementAction, addElementToSelectionAction, selectItemAction }),
+  connect(mapStateToProps, { setCoordsAction, updateElementAction, addElementToSelectionAction }),
   injectSheet(style)
 )(Gate);

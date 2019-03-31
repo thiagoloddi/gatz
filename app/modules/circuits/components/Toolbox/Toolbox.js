@@ -9,13 +9,6 @@ import ToolboxSection from './ToolboxSection';
 
 
 class Toolbox extends Component {
-
-  constructor(props) {
-    super(props);
-
-    this.onItemClick = this.onItemClick.bind(this);
-  }
-
   render() {
     return (
       <div ref="toolbox" className="tool-box">

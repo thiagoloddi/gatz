@@ -48,8 +48,4 @@ export default class GateController extends Controller {
   selectGate(id) {
     this.view.props.addElementToSelectionAction(id);
   }
-  
-  selectItem(item) {
-    this.view.props.selectItemAction(item);
-  }
 }

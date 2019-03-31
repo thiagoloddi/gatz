@@ -1,10 +1,10 @@
 import _ from 'lodash';
 
 import Switch from "../models/gates/Switch";
-import LineModel from "../models/LineModel";
 import And from '../models/gates/And';
 
-import { AND, SWITCH } from '../constants/gates';
+import { AND, SWITCH, GATE } from '../constants/gates';
+import { LINE } from '../constants/globals.constants';
 
 export default class CanvasController {
 
@@ -46,7 +46,6 @@ export default class CanvasController {
     const { coords, zoom } = this.view.props;
     const { pageX, pageY } = e;
     const xy = coords.windowToCanvas(pageX, pageY, zoom);
-    console.log('xy: ', xy);
     
     this.view.props.selectItemAction(null);
     
@@ -68,5 +67,45 @@ export default class CanvasController {
     let zoom = view.props.zoom + (deltaY < 0 ? 1 : -1) * step;
     zoom = Math.min(Math.max(zoom, 0.5), 2);
     view.props.updateZoomAction(zoom);
+  }
+
+  setInitCoords() {
+    const { canvas } = this.view.refs;
+    const coords = this.view.props.coords.clone();
+    coords.setCanvasOffset(canvas);
+    this.view.props.setCoordsAction(coords);
+  }
+
+  deleteItems() {
+    const { selected, elements } = this.view.props;
+    const newElements = this.view.props.elements.filter(e => {
+      console.log(e);
+      console.log(selected);
+      if(selected.includes(e.id)) {
+        if(e.category == GATE) {
+          _.each(e.lines, lineId => {
+            if(lineId) {
+              const line = _.find(elements, { id: lineId }).clone();
+              line.removeGate(e.id);
+              this.view.props.updateElementAction(line);
+            }
+          });
+
+          return false;
+        }
+        if(e.category == LINE) {
+          if(e.startGate && e.endGate) {
+            return !(selected.includes(e.startGate) && selected.includes(e.endGate));
+          } else {
+            return !(selected.includes(e.startGate) || selected.includes(e.endGate));
+          }
+        }
+      }
+
+      return true;
+    });
+    console.log(newElements);
+    this.view.props.setElementsAction(newElements);
+    this.view.props.clearSelectionAction();
   }
 }

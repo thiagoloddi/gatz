@@ -117,6 +117,17 @@ export default class LineModel {
     }
   }
 
+  removeGate(gateId) {
+    if(this.startGate == gateId) {
+      this.startGate = null;
+      this.startTerminal = null;
+    }
+    else if(this.endGate == gateId) {
+      this.endGate = null;
+      this.endTerminal = null;
+    }
+  }
+
   getHeight() {
     return Math.abs(this.end.y - this.start.y);
   }

@@ -17,7 +17,7 @@ import {
   setCoordsAction
 } from '../../../actions/window.actions';
 
-import { addElementAction, updateElementAction, setDrawingLineAction } from '../../../actions/element.actions';
+import { addElementAction, updateElementAction, setDrawingLineAction, setElementsAction } from '../../../actions/element.actions';
 
 class Canvas extends Component {
 
@@ -59,11 +59,17 @@ class Canvas extends Component {
   }
   
   componentDidMount() {
-    const { canvas, viewport } = this.refs;
-    const coords = this.props.coords.clone();
-    coords.setCanvasOffset(canvas);
-    this.props.setCoordsAction(coords);
-    viewport.addEventListener("wheel", this.controller.updateZoom);
+    this.controller.setInitCoords();
+    
+    this.refs.viewport.addEventListener("wheel", this.controller.updateZoom);
+    
+    document.addEventListener('keydown', e => {
+      const DELETE = 46;
+      console.log(e.keyCode);
+      switch(e.keyCode) {
+        case DELETE: this.controller.deleteItems(); break;
+      }
+    });
   }
 
   onHover(e) {
@@ -158,5 +164,6 @@ export default connect(({ window, toolbox, elements }) => {
   addElementToSelectionAction,
   updateElementAction,
   setCoordsAction,
-  setDrawingLineAction
+  setDrawingLineAction,
+  setElementsAction
 })(Canvas);

@@ -1,9 +1,12 @@
 import uuidv4 from 'uuid/v4';
 import _ from "lodash";
 import c, { GATE } from '../constants/gates';
+import Immutable from '../../../utils/Immutable';
  
-export default class Element {
+export default class Element extends Immutable {
   constructor(coords, type, category, id) {
+    super();
+    
     this.id = id || uuidv4();
     this.constants = c[type];
     this.x = coords.x - this.constants.WIDTH / 2;
