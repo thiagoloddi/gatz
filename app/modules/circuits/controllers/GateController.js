@@ -50,6 +50,6 @@ export default class GateController extends Controller {
   }
   
   selectItem(item) {
-    this.view.props.selectItemAction(item == this.view.props.selected ? null : item);
+    this.view.props.selectItemAction(item);
   }
 }
