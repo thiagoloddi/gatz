@@ -4,7 +4,7 @@ import injectSheet from 'react-jss';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 
-import { selectItemAction } from '../../../../actions/toolbox.actions';
+import { setNewElementAction } from '../../../../actions/element.actions';
 
 const style = {
   container: {
@@ -16,10 +16,10 @@ const style = {
   }
 };  
 
-const ToolboxItem = ({ gateType, classes, selectItemAction }) => {
+const ToolboxItem = ({ gateType, classes, setNewElementAction }) => {
 
   const selectItem = () => {
-    selectItemAction(gateType);
+    setNewElementAction(gateType);
   }
 
   return (
@@ -31,6 +31,6 @@ const ToolboxItem = ({ gateType, classes, selectItemAction }) => {
 }
 
 export default compose(
-  connect(null, { selectItemAction }),
+  connect(null, { setNewElementAction }),
   injectSheet(style)
 )(ToolboxItem);

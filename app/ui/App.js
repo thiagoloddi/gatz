@@ -4,12 +4,13 @@ import { Provider } from "react-redux";
 import { createStore } from "redux";
 
 import AsyncComponent from './AsyncComponent';
-import "../stylesheets/_index.styl";
+import "../../stylesheets/_index.styl";
 import reducers from './reducers';
+import Engine from '../models/Engine';
 
 const circuits = import(/* webpackChunkName: "circuits" */ './modules/circuits/index');
 
-
+export const engine = new Engine();
 
 const App = () => {
     return (

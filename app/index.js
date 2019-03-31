@@ -2,15 +2,16 @@ import React from 'react';
 import { render } from 'react-dom';
 import { BrowserRouter as Router } from "react-router-dom";
 
-import App from './App';
+import App from './ui/App';
+import Engine from './models/Engine';
+
+export const engine = new Engine();
 
 const element = document.getElementById("app");
 
-if(element) {
-    render(
-        <Router>
-            <App />
-        </Router>,
-        element
-    );
-}
+render(
+    <Router>
+        <App />
+    </Router>,
+    element
+);

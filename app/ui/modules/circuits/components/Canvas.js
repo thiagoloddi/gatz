@@ -1,4 +1,6 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import injectSheet from 'react-jss';
+import { compose } from 'redux';
 
 import Gate from './Gate';
 import Coordinates from '../models/Coordinates';
@@ -17,7 +19,30 @@ import {
   setCoordsAction
 } from '../../../actions/window.actions';
 
+import { 
+  setViewportPositionAction,
+  setZoomAction
+ } from '../../../actions/viewport.actions';
+
 import { addElementAction, updateElementAction, setDrawingLineAction, setElementsAction } from '../../../actions/element.actions';
+import ViewportController from '../../../../controllers/ViewportController';
+import GateController from '../../../../controllers/GateController';
+
+const style = {
+  canvas: ({ position: { x, y, }, zoom }) => {
+    console.log('zoom: ', zoom);
+    
+    return ({
+    top: `${-1 * y}px`,
+    left: `${-1 * x}px`,
+    height: CANVAS_DIMEN * zoom,
+    width: CANVAS_DIMEN * zoom,
+    position: 'absolute',
+    border: '1px solid #d6d6d6',
+    backgroundColor: 'white',
+    boxSizing: 'content-box'
+  })}
+}
 
 class Canvas extends Component {
 
@@ -33,20 +58,24 @@ class Canvas extends Component {
     this.onCanvasDrag = this.onCanvasDrag.bind(this);
 
     this.controller = new CanvasController(this);
+
+    this.viewportController = new ViewportController(props);
+    this.gateController = new GateController();
   }
 
   onCanvasDragStart(e) {
-    this.controller.startCanvasDrag(e);
+    e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
+    this.viewportController.startViewportDrag(e);
   }
   
   onCanvasDrag(e) {
-    this.controller.dragCanvas(e);
+    this.viewportController.dragViewport(e);
   }
 
   onCanvasClick(e) {
-    const { controller, props } = this;
+    const { props } = this;
     if(props.newElement) {
-      controller.createGate(e, props.newElement);
+      this.gateController.createGate(props.newElement, e);
     }
 
     if(props.drawingLine) {
@@ -59,9 +88,16 @@ class Canvas extends Component {
   }
   
   componentDidMount() {
-    this.controller.setInitCoords();
+
+    // Set viewport offset
+    const { offsetLeft, offsetTop } = this.refs.canvas.parentNode;
+    this.viewportController.boundViewportToCanvas(offsetLeft, offsetTop);
+
+    // this.controller.setInitCoords();
     
-    this.refs.viewport.addEventListener("wheel", this.controller.updateZoom);
+    this.refs.viewport.addEventListener("wheel", e => {
+      this.viewportController.updateZoom(e.deltaY);
+    });
     
     document.addEventListener('keydown', e => {
       const DELETE = 46;
@@ -73,16 +109,16 @@ class Canvas extends Component {
   }
 
   onHover(e) {
-    const { pageX, pageY } = e;
-    const c = this.props.coords.windowToCanvas(pageX, pageY, this.props.zoom);
-    this.setState({ c });
+    // const { pageX, pageY } = e;
+    // const c = this.props.coords.windowToCanvas(pageX, pageY, this.props.zoom);
+    // this.setState({ c });
 
-    let { drawingLine } = this.props;
-    if(drawingLine) {
-      drawingLine = _.cloneDeep(drawingLine);
-      drawingLine.setEndPosition(c);
-      this.props.updateElementAction(drawingLine);
-    }
+    // let { drawingLine } = this.props;
+    // if(drawingLine) {
+    //   drawingLine = _.cloneDeep(drawingLine);
+    //   drawingLine.setEndPosition(c);
+    //   this.props.updateElementAction(drawingLine);
+    // }
   }
 
   renderElements() {
@@ -116,6 +152,7 @@ class Canvas extends Component {
 
   getCanvasStyle() {
     const { position: { x, y }, zoom } = this.props;
+    console.log('x, y: ', x, y);
     return {
       top: `${PADDING - y}px`,
       left: `${PADDING - x}px`,
@@ -125,13 +162,13 @@ class Canvas extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     return (
       <div ref="viewport" className="canvas-viewport">
         <div
           draggable
           ref="canvas"
-          className="drawing-area"
-          style={this.getCanvasStyle()}
+          className={classes.canvas}
           onDragStart={this.onCanvasDragStart}
           onDrag={this.onCanvasDrag}
           onClick={this.onCanvasClick}
@@ -144,26 +181,32 @@ class Canvas extends Component {
   }
 }
 
-export default connect(({ window, toolbox, elements }) => {
-  return {
-    position: window.canvasPosition,
-    newElement: toolbox.selected,
-    zoom: window.zoom,
-    selected: window.selected,
-    elements: elements.all,
-    coords: window.coords,
-    drawingLine: elements.drawingLine
-  };
-}, {
-  selectItemAction,
-  setCanvasPosition,
-  updateZoomAction,
-  selectElementAction,
-  clearSelectionAction,
-  addElementAction,
-  addElementToSelectionAction,
-  updateElementAction,
-  setCoordsAction,
-  setDrawingLineAction,
-  setElementsAction
-})(Canvas);
+export default compose(
+  connect(({ window, elements, viewport }) => {
+    return {
+      position: viewport.position,
+      newElement: elements.new,
+      zoom: viewport.zoom,
+      selected: window.selected,
+      elements: elements.all,
+      coords: window.coords,
+      drawingLine: elements.drawingLine
+    };
+  }, {
+    selectItemAction,
+    setCanvasPosition,
+    updateZoomAction,
+    selectElementAction,
+    clearSelectionAction,
+    addElementAction,
+    addElementToSelectionAction,
+    updateElementAction,
+    setCoordsAction,
+    setDrawingLineAction,
+    setElementsAction,
+
+    setViewportPositionAction,
+    setZoomAction
+  }),
+  injectSheet(style)
+)(Canvas);
