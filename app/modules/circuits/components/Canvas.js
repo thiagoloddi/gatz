@@ -13,10 +13,11 @@ import {
   updateZoomAction,
   selectElementAction,
   clearSelectionAction,
-  addElementToSelectionAction
+  addElementToSelectionAction,
+  setCoordsAction
 } from '../../../actions/window.actions';
 
-import { addElementAction, updateElementAction } from '../../../actions/element.actions';
+import { addElementAction, updateElementAction, setDrawingLineAction } from '../../../actions/element.actions';
 
 class Canvas extends Component {
 
@@ -24,118 +25,57 @@ class Canvas extends Component {
     super(props);
 
     this.coords = new Coordinates();
-    this.gates = [];
-    this.lines = [];
-
-    this.elements = [];
-
-    this.state = {
-      elements: [],
-      drawingLine: false
-    };
 
     this.onCanvasClick = this.onCanvasClick.bind(this);
-    this.onGateDrag = this.onGateDrag.bind(this);
-    this.onGateDragStart = this.onGateDragStart.bind(this);
     this.onHover = this.onHover.bind(this);
-    this.onTerminalClick = this.onTerminalClick.bind(this);
-    
     
     this.onCanvasDragStart = this.onCanvasDragStart.bind(this);
     this.onCanvasDrag = this.onCanvasDrag.bind(this);
-    this.onGateMouseDown = this.onGateMouseDown.bind(this);
-    this.onCanvasGateClick = this.onCanvasGateClick.bind(this);
 
     this.controller = new CanvasController(this);
   }
 
   onCanvasDragStart(e) {
-    const { pageX, pageY } = e;
-    const { x, y } = this.props.position;
-    this.coords.setDragStart(pageX, pageY);
-    this.coords.setInitialPosition(x, y);
-    e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
+    this.controller.startCanvasDrag(e);
   }
   
   onCanvasDrag(e) {
-    const { pageX, pageY } = e;
-    const { dragStart, initialPosition } = this.coords;
-    if(pageX && pageY) {
-      const x = dragStart.x - pageX + initialPosition.x;
-      const y = dragStart.y - pageY + initialPosition.y;
-
-      this.props.setCanvasPosition(x, y);
-      this.coords.setCanvasPosition(x, y);
-    }
+    this.controller.dragCanvas(e);
   }
 
   onCanvasClick(e) {
-    const { controller, props, state } = this;
-    console.log('canvas click', state.drawingLine);
+    const { controller, props } = this;
     if(props.newElement) {
-      props.selectItemAction(null);
-      const gate = controller.createGate(e, props.newElement);
-      props.addElementAction(gate);
-      // this.updateView(props.zoom, [gate.id]);
+      controller.createGate(e, props.newElement);
     }
 
-    if(state.drawingLine) {
-      this.setState({ drawingLine: null });
+    if(props.drawingLine) {
+      props.setDrawingLineAction(null);
     }
 
-    if(props.selected.length && !state.drawingLine) {
+    if(props.selected.length && !props.drawingLine) {
       props.clearSelectionAction();
-    }
-  }
-
-  onCanvasGateClick(e) {
-    e.stopPropagation();  
-  }
-
-  onGateMouseDown(e) {
-    e.stopPropagation();
-    const { id } = e.currentTarget;
-
-    if(e.ctrlKey) {
-      this.props.addElementToSelectionAction(id);
     }
   }
   
   componentDidMount() {
     const { canvas, viewport } = this.refs;
-    this.coords.setCanvasOffset(canvas);
+    const coords = this.props.coords.clone();
+    coords.setCanvasOffset(canvas);
+    this.props.setCoordsAction(coords);
     viewport.addEventListener("wheel", this.controller.updateZoom);
   }
 
   onHover(e) {
     const { pageX, pageY } = e;
-    const c = this.coords.windowToCanvas(pageX, pageY, this.props.zoom);
+    const c = this.props.coords.windowToCanvas(pageX, pageY, this.props.zoom);
     this.setState({ c });
 
-    let { drawingLine } = this.state;
+    let { drawingLine } = this.props;
     if(drawingLine) {
       drawingLine = _.cloneDeep(drawingLine);
       drawingLine.setEndPosition(c);
       this.props.updateElementAction(drawingLine);
-    }
-  }
-
-  onGateDragStart(e) {
-    this.controller.dragGateStart(e);
-  }
-
-  onGateDrag(e) {
-    this.controller.dragGate(e);
-  }
-
-  onTerminalClick({ terminal, gateId }, e) {
-    console.log('terminal click', this.state.drawingLine);
-    e.stopPropagation();
-    // this.props.clearSelectionAction();
-    if(!this.state.drawingLine) {
-      this.controller.createLine({ terminal, gateId });
-    } else {
-      this.controller.finishLine({ terminal, gateId });
     }
   }
 
@@ -156,19 +96,10 @@ class Canvas extends Component {
   }
 
   renderGate(gate) {
-    const { zoom, selected } = this.props;
     const props =  {
       gate,
-      zoom,
       type: gate.type,
       key: gate.id,
-      selected: selected.includes(gate.id),
-      isCanvas: true,
-      onDragStart: this.onGateDragStart,
-      onDrag: this.onGateDrag,
-      onTerminalClick: this.onTerminalClick,
-      onMouseDown: this.onGateMouseDown,
-      onClick: this.onCanvasGateClick
     };
 
     switch(gate.type) {
@@ -213,7 +144,9 @@ export default connect(({ window, toolbox, elements }) => {
     newElement: toolbox.selected,
     zoom: window.zoom,
     selected: window.selected,
-    elements: elements.all
+    elements: elements.all,
+    coords: window.coords,
+    drawingLine: elements.drawingLine
   };
 }, {
   selectItemAction,
@@ -223,5 +156,7 @@ export default connect(({ window, toolbox, elements }) => {
   clearSelectionAction,
   addElementAction,
   addElementToSelectionAction,
-  updateElementAction
+  updateElementAction,
+  setCoordsAction,
+  setDrawingLineAction
 })(Canvas);

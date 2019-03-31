@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { Component } from 'react';
 import injectSheet from 'react-jss';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import { addElementAction, updateElementAction, setDrawingLineAction } from '../../../actions/element.actions';
+import TerminalController from '../controllers/TerminalController';
 
 const TERMINAL_WIDTH = 5;
 const TERMINAL_BORDER = 4
@@ -20,13 +25,45 @@ const style = {
   }
 };
 
-const Terminal = ({ onTerminalClick, classes }) => {
-  return (
-    <div
-      className={classes.terminal}
-      onClick={onTerminalClick}  
-    />
-  )
+class Terminal extends Component {
+
+  constructor(props) {
+    super(props);
+
+    this.controller = new TerminalController(this);
+
+    this.onClick = this.onClick.bind(this);
+  }
+
+  onClick(e) {
+    e.stopPropagation();
+
+    const { name, gateId } = this.props;
+    if(!this.props.drawingLine) {
+      this.controller.createLine(name, gateId);
+    } else {
+      this.controller.finishLine(name, gateId);
+    }
+  }
+
+  render() {
+    const { classes } = this.props;
+
+    return (
+      <div
+        className={classes.terminal}
+        onClick={this.onClick}  
+      />
+    );
+  }
 }
 
-export default injectSheet(style)(Terminal);
+const mapStateToProps = ({ elements }) => ({
+  elements: elements.all,
+  drawingLine: elements.drawingLine
+})
+
+export default compose(
+  injectSheet(style),
+  connect(mapStateToProps, { addElementAction, updateElementAction, setDrawingLineAction })
+)(Terminal);

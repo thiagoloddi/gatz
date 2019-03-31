@@ -1,7 +1,10 @@
 import { PADDING } from "../constants/globals.constants";
+import Immutable from "../../../utils/Immutable";
 
-export default class Coordinates {
+export default class Coordinates extends Immutable {
   constructor() {
+    super();
+    
     this.canvasPosition = { x: 0, y: 0 };
     this.canvasOffset = null
     this.dragStart = null;

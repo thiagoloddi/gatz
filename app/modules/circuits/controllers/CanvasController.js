@@ -14,76 +14,49 @@ export default class CanvasController {
     this.updateZoom = this.updateZoom.bind(this);
   }
 
-  createGate(e, selected) {    
-    const { coords, props: { zoom } } = this.view;
+  startCanvasDrag(e) {
+    e.dataTransfer.setDragImage(document.createElement('img'), 0, 0);
+
     const { pageX, pageY } = e;
-    const xy = coords.windowToCanvas(pageX, pageY, zoom);
-    
-    switch(selected) {
-      case AND: return new And(xy);
-      case SWITCH: return new Switch(xy);
+    const { x, y } = this.view.props.position;
+    const coords = this.view.props.coords.clone();
+
+    coords.setDragStart(pageX, pageY);
+    coords.setInitialPosition(x, y);
+
+    this.view.props.setCoordsAction(coords);
+  }
+
+  dragCanvas(e) {
+    const { pageX, pageY } = e;
+    const { dragStart, initialPosition } = this.view.props.coords;
+    if(pageX && pageY) {
+      const x = dragStart.x - pageX + initialPosition.x;
+      const y = dragStart.y - pageY + initialPosition.y;
+
+      const coords = this.view.props.coords.clone();
+      coords.setCanvasPosition(x, y);
+
+      this.view.props.setCanvasPosition(x, y);
+      this.view.props.setCoordsAction(coords);
     }
   }
 
-  dragGateStart(e) {
-    const { coords, props: { zoom, selected, elements }} = this.view;
+  createGate(e, selected) {    
+    const { coords, zoom } = this.view.props;
     const { pageX, pageY } = e;
-    selected.forEach(id => {
-      const el = _.cloneDeep(_.find(elements, { id }));
-      el.setClickPositionOffset(coords.windowToCanvas(pageX, pageY, zoom));
-      this.view.props.updateElementAction(el);
-    });
-  }
-
-  dragGate(e) {
-    const { pageX, pageY } = e;
-    if(!pageX && !pageY) return;
-
-    const { coords, props: { zoom, selected, elements }} = this.view;
-    const cachedLines = {};
-
-    selected.forEach(id => {
-      const gate = _.cloneDeep(_.find(elements, { id }));
-      
-      gate.updatePosition(coords.windowToCanvas(pageX, pageY, zoom));
-
-      this.view.props.updateElementAction(gate);
-
-      _.forEach(gate.lines, (lineId, terminal) => {
-        if(lineId) {
-          if(!cachedLines[lineId]) cachedLines[lineId] = _.find(elements, { id: lineId }).clone();
-          const line = cachedLines[lineId];
-          line.updatePosition(gate.getTerminalCoords(terminal), gate.id);
-          this.view.props.updateElementAction(line);
-        }
-      });
-    });
-  }
-
-  createLine({ terminal, gateId }) {
-      const { elements } = this.view.props;
-      const gate = _.cloneDeep(_.find(elements, { id: gateId }));
-      const line = new LineModel(gate.id, gate.getTerminalCoords(terminal), terminal);
-  
-      gate.setTerminalLine(terminal, line.id);
-      
-      this.view.props.addElementAction(line);
-      this.view.props.updateElementAction(gate);
-      this.view.setState({ drawingLine: line });
-  }
-
-  finishLine({ terminal, gateId }) {
-    const { elements } = this.view.props;
-
-    const gate = _.cloneDeep(_.find(elements, { id: gateId }));
-    const line = _.cloneDeep(_.find(elements, { id: this.view.state.drawingLine.id }));
-
-    line.setEndGate(gate.id, terminal, gate.getTerminalCoords(terminal));
-    gate.setTerminalLine(terminal, line.id);
+    const xy = coords.windowToCanvas(pageX, pageY, zoom);
+    console.log('xy: ', xy);
     
-    this.view.props.updateElementAction(gate);
-    this.view.props.updateElementAction(line);
-    this.view.setState({ drawingLine: null });
+    this.view.props.selectItemAction(null);
+    
+    let gate;
+    switch(selected) {
+      case AND: gate = new And(xy); break;
+      case SWITCH: gate = new Switch(xy); break;
+    }
+
+    this.view.props.addElementAction(gate);
   }
 
   updateZoom(e) {

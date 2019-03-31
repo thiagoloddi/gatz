@@ -3,6 +3,7 @@ export const SELECT_ELEMENT = 'SELECT_ELEMENT';
 export const SET_CANVAS_POSITION = 'SET_CANVAS_POSITION';
 export const CLEAR_SELECTION = 'CLEAR_SELECTION';
 export const ADD_ELEMENT_TO_SELECTION = 'ADD_ELEMENT_TO_SELECTION';
+export const SET_COORDS_ACTION = 'SET_COORDS_ACTION';
 
 export const updateZoomAction = zoom => {
   return {
@@ -37,3 +38,8 @@ export const clearSelectionAction = () => {
     type: CLEAR_SELECTION
   }
 }
+
+export const setCoordsAction = coords => ({
+  type: SET_COORDS_ACTION,
+  payload: coords
+});
